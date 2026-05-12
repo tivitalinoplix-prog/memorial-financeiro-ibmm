@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import './globals.css';
 
 const geistSans = Geist({
@@ -42,21 +43,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       suppressHydrationWarning
     >
       <body className="font-sans bg-background text-text-primary antialiased min-h-screen overflow-x-hidden">
-        {children}
-        <Toaster
-          theme="dark"
-          position="bottom-right"
-          toastOptions={{
-            style: {
-              background: '#1c1c22',
-              border: '1px solid #27272a',
-              color: '#fafafa',
-              fontSize: '12px',
-              fontFamily: 'var(--font-sans)',
-              borderRadius: '0px',
-            },
-          }}
-        />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              className: "bg-card border border-border text-text-primary font-sans rounded-none shadow-none text-[12px]",
+            }}
+          />
+        </ThemeProvider>
       </body>
     </html>
   );

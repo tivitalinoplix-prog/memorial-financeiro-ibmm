@@ -8,26 +8,26 @@
    ═══════════════════════════════════════════════════════ */
 
 @theme {
-  /* ── Surface System (Zinc Deep Dark) ── */
-  --color-background: #09090b;
-  --color-background-alt: #0c0c0e;
-  --color-surface: #18181b;
-  --color-surface-hover: #1f1f23;
-  --color-card: #1c1c22;
-  --color-card-hover: #27272a;
-  --color-elevated: #2a2a32;
+  /* ── Surface System ── */
+  --color-background: var(--bg);
+  --color-background-alt: var(--bg-alt);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-elevated: var(--elevated);
 
   /* ── Border System ── */
-  --color-border: #27272a;
-  --color-border-hover: #3f3f46;
-  --color-border-accent: #52525b;
+  --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+  --color-border-accent: var(--border-accent);
   --color-border-active: #14b8a6;
 
   /* ── Typography ── */
-  --color-text-primary: #fafafa;
-  --color-text-secondary: #a1a1aa;
-  --color-text-muted: #71717a;
-  --color-text-ghost: #52525b;
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-ghost: var(--text-ghost);
 
   /* ── Brand Accent (Teal / Operative) ── */
   --color-primary: #14b8a6;
@@ -56,6 +56,46 @@
   /* ── Legacy compat ── */
   --color-success: #34d399;
   --color-error: #fb7185;
+}
+
+@layer base {
+  :root {
+    --bg: #ffffff;
+    --bg-alt: #fafafa;
+    --surface: #ffffff;
+    --surface-hover: #f4f4f5;
+    --card: #ffffff;
+    --card-hover: #f4f4f5;
+    --elevated: #ffffff;
+
+    --border: #e4e4e7;
+    --border-hover: #d4d4d8;
+    --border-accent: #a1a1aa;
+
+    --text-primary: #09090b;
+    --text-secondary: #52525b;
+    --text-muted: #71717a;
+    --text-ghost: #a1a1aa;
+  }
+
+  .dark {
+    --bg: #09090b;
+    --bg-alt: #0c0c0e;
+    --surface: #18181b;
+    --surface-hover: #1f1f23;
+    --card: #1c1c22;
+    --card-hover: #27272a;
+    --elevated: #2a2a32;
+
+    --border: #27272a;
+    --border-hover: #3f3f46;
+    --border-accent: #52525b;
+
+    --text-primary: #fafafa;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --text-ghost: #52525b;
+  }
 }
 
 @layer base {

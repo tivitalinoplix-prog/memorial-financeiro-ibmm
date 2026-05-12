@@ -121,15 +121,17 @@ export function SurgeryTab() {
             {sources.map(s => <option key={s} value={s}>{s.replace('_PDF', '')}</option>)}
           </select>
           <ExportToolbar 
+            containerId="surgery-dashboard"
             data={exportData}
             filename="Mesa_Cirurgia" 
-            pdfTitle="Relatório de Mesa de Cirurgia" 
+            title="Relatório de Mesa de Cirurgia" 
           />
         </div>
       </div>
 
       {/* Summary Bar */}
-      <div className="grid grid-cols-3 gap-3">
+      <div id="surgery-dashboard" className="space-y-4">
+        <div className="grid grid-cols-3 gap-3">
         <div className="bg-card border border-border p-3">
           <div className="text-[9px] text-text-ghost uppercase tracking-[0.08em] font-bold mb-1">Entradas</div>
           <div className="text-sm font-bold text-emerald-400 font-mono">{formatCurrencyShort(totalIncome)}</div>
@@ -293,6 +295,7 @@ export function SurgeryTab() {
           </div>
         )}
       </DetailDrawer>
+    </div>
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { SuppliersTab } from '@/components/tabs/SuppliersTab';
 import { PastoralTab } from '@/components/tabs/PastoralTab';
 import { ExtratosTab } from '@/components/tabs/ExtratosTab';
 import { ImportModal } from '@/components/ImportModal';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
 
 export default function App() {
@@ -173,6 +174,9 @@ export default function App() {
             </button>
             
             <div className="h-4 w-px bg-border hidden sm:block"></div>
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
 
             {/* Notifications */}
             <div className="relative">

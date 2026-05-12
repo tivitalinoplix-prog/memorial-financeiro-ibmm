@@ -42,22 +42,20 @@ export function SuppliersTab() {
 
   const totalVolume = suppliers.reduce((s, sup) => s + sup.totalSpent, 0);
 
-  const exportData = useMemo(() => {
-    return filtered.map(s => ({
-      'ID': s.id,
-      'Fornecedor': s.name,
-      'Volume Total': s.totalSpent,
-      'Volume Text': formatCurrency(s.totalSpent),
-      'Qtd Transações': s.txCount,
-      'Ticket Médio': formatCurrency(s.totalSpent / s.txCount),
-      'Última Atividade': s.lastDate,
-      'Categorias': s.categories.join(', '),
-      'Classificação Risco': s.riskLevel === 'high' ? 'Alto Volume' : s.riskLevel === 'medium' ? 'Médio Volume' : 'Baixo Volume'
-    }));
-  }, [filtered]);
+  const exportData = filtered.map(s => ({
+    'ID': s.id,
+    'Fornecedor': s.name,
+    'Volume Total': s.totalSpent,
+    'Volume Text': formatCurrency(s.totalSpent),
+    'Qtd Transações': s.txCount,
+    'Ticket Médio': formatCurrency(s.totalSpent / s.txCount),
+    'Última Atividade': s.lastDate,
+    'Categorias': s.categories.join(', '),
+    'Classificação Risco': s.riskLevel === 'high' ? 'Alto Volume' : s.riskLevel === 'medium' ? 'Médio Volume' : 'Baixo Volume'
+  }));
 
   return (
-    <div className="space-y-4 animate-slide-up">
+    <div id="suppliers-dashboard" className="space-y-4 animate-slide-up">
       
       {/* Header and Toolbar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-surface border border-border p-3">
@@ -83,9 +81,10 @@ export function SuppliersTab() {
             />
           </div>
           <ExportToolbar 
+            containerId="suppliers-dashboard"
             data={exportData} 
             filename="Fornecedores_Diretorio" 
-            pdfTitle="Diretório de Fornecedores"
+            title="Diretório de Fornecedores"
           />
         </div>
       </div>
