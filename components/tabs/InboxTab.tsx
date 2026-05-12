@@ -3,9 +3,11 @@
 import React, { useState, useCallback } from 'react';
 import { DEMO_DATA, formatCurrency } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
-import { Search, Check, X, Eye, Upload, FileText, Loader2 } from 'lucide-react';
+import { Search, Check, X, Eye, Upload, FileText, Loader2, Brain } from 'lucide-react';
 import { StatusBadge, StatusType } from '@/components/StatusBadge';
 import { DetailDrawer } from '@/components/DetailDrawer';
+import { ExportToolbar } from '@/components/ExportToolbar';
+import { NoteReader } from '@/components/NoteReader';
 import { toast } from 'sonner';
 
 export function InboxTab() {
@@ -14,6 +16,22 @@ export function InboxTab() {
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [items, setItems] = useState(DEMO_DATA.inboxItems);
+  const [isNoteReaderOpen, setIsNoteReaderOpen] = useState(false);
+
+  const handleNoteConfirm = (data: any) => {
+    const newItem = {
+      id: items.length + 1,
+      sup: data.razaoSocial || 'N/I',
+      cnpj: data.cnpj || 'N/I',
+      date: data.data || new Date().toLocaleDateString('pt-BR'),
+      val: data.valor || 0,
+      cc: data.centroCusto || 'Outros',
+      tipo: data.metodoPagamento || 'PIX',
+      status: 'pendente',
+      icon: '🤖'
+    };
+    setItems(prev => [newItem, ...prev]);
+  };
   
   const filtered = items.filter(i => {
     if (filter !== 'all' && i.status !== filter) return false;
@@ -67,7 +85,7 @@ export function InboxTab() {
   }, []);
 
   return (
-    <div className="space-y-4 animate-slide-up">
+    <div id="inbox-content" className="space-y-4 animate-slide-up">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -79,15 +97,25 @@ export function InboxTab() {
           <span className="text-[10px] text-text-muted mt-0.5 inline-block font-mono">{filtered.length} documentos</span>
         </div>
         
-        <div className="relative w-full sm:w-56">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-ghost" />
-          <input 
-            type="text" 
-            placeholder="Buscar fornecedor, CNPJ..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-surface border border-border pl-9 pr-4 py-2 text-[11px] text-text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-text-ghost"
-          />
+        <div className="flex items-center gap-2">
+          <ExportToolbar containerId="inbox-content" filename="inbox_notas" title="Inbox de Notas Fiscais" />
+          <button
+            onClick={() => setIsNoteReaderOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/30 text-primary text-[10px] font-bold hover:bg-primary/20 transition-colors"
+          >
+            <Brain className="w-3 h-3" />
+            IA Nota
+          </button>
+          <div className="relative w-full sm:w-44">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-ghost" />
+            <input 
+              type="text" 
+              placeholder="Buscar fornecedor..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-surface border border-border pl-9 pr-4 py-2 text-[11px] text-text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-text-ghost"
+            />
+          </div>
         </div>
       </div>
 
@@ -294,6 +322,12 @@ export function InboxTab() {
           </div>
         )}
       </DetailDrawer>
+
+      <NoteReader
+        isOpen={isNoteReaderOpen}
+        onClose={() => setIsNoteReaderOpen(false)}
+        onConfirm={handleNoteConfirm}
+      />
     </div>
   );
 }

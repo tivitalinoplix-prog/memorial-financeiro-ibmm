@@ -8,6 +8,7 @@ import {
 import { formatCurrencyShort, formatNumber, formatCurrency } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import { KpiCard } from '@/components/KpiCard';
+import { ExportToolbar } from '@/components/ExportToolbar';
 import { AlertTriangle, TrendingUp, GitMerge, FileCheck, CheckCircle, Upload, Flame, Activity } from 'lucide-react';
 import { transactions } from '@/lib/data-importer';
 
@@ -98,9 +99,20 @@ export function DashboardTab() {
   const saneamento = Math.round((totalTxs / 2000) * 100);
 
   return (
-    <div className="space-y-5 animate-slide-up">
+    <div id="dashboard-content" className="space-y-5 animate-slide-up">
       
-      {/* ═══ KPIs Grid ═══ */}
+      {/* Header com Export */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-[13px] font-bold text-text-primary flex items-center gap-2">
+            <div className="w-0.5 h-4 bg-primary"></div>
+            Painel Executivo
+          </h2>
+          <span className="text-[10px] text-text-muted font-mono">{formatNumber(totalTxs)} transações processadas</span>
+        </div>
+        <ExportToolbar containerId="dashboard-content" filename="dashboard_executivo" title="Painel Executivo — Memorial IBMM" />
+      </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <KpiCard 
           title="Total Entradas" 

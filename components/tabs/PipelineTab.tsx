@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { CheckCircle2, Clock, XCircle, RefreshCw, Activity, ArrowRight, Zap, Wifi, WifiOff, Server } from 'lucide-react';
+import { CheckCircle2, Clock, XCircle, RefreshCw, Activity, ArrowRight, Zap, Wifi, WifiOff, Server, FileSpreadsheet } from 'lucide-react';
+import { ExportToolbar } from '@/components/ExportToolbar';
+import { ComunionImporter } from '@/components/ComunionImporter';
 
 const PIPELINE_STAGES = [
   {
@@ -55,6 +57,7 @@ const QUEUE_ITEMS = [
 
 export function PipelineTab() {
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
+  const [isComunionOpen, setIsComunionOpen] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -77,7 +80,7 @@ export function PipelineTab() {
   };
 
   return (
-    <div className="space-y-5 animate-slide-up">
+    <div id="pipeline-content" className="space-y-5 animate-slide-up">
       
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -89,6 +92,14 @@ export function PipelineTab() {
           <span className="text-[10px] text-text-muted mt-0.5 inline-block font-mono">Observabilidade do fluxo de processamento</span>
         </div>
         <div className="flex items-center gap-2">
+          <ExportToolbar containerId="pipeline-content" filename="pipeline_integracao" title="Pipeline de Integração" />
+          <button
+            onClick={() => setIsComunionOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-500/10 border border-violet-500/30 text-violet-400 text-[10px] font-bold hover:bg-violet-500/20 transition-colors"
+          >
+            <FileSpreadsheet className="w-3 h-3" />
+            Sincronizar Comunión
+          </button>
           <span className="flex items-center gap-1.5 text-[10px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 font-bold uppercase tracking-[0.05em]">
             <Wifi className="w-3 h-3" /> Conectado
           </span>
@@ -177,6 +188,8 @@ export function PipelineTab() {
           </div>
         ))}
       </div>
+
+      <ComunionImporter isOpen={isComunionOpen} onClose={() => setIsComunionOpen(false)} />
     </div>
   );
 }

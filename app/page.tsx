@@ -92,7 +92,7 @@ export default function App() {
               </span>
               <span className="text-text-muted">Eclésia Online</span>
             </span>
-            <span className="font-mono">v4.0</span>
+            <span className="font-mono">v4.1</span>
           </div>
         </div>
       </aside>

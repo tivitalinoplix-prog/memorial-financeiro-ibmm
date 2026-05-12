@@ -7,6 +7,7 @@ import { formatCurrency, formatCurrencyShort } from '@/lib/mock-data';
 import { StatusBadge, StatusType } from '@/components/StatusBadge';
 import { DetailDrawer } from '@/components/DetailDrawer';
 import { Search, Filter, ChevronDown, ChevronUp, Download, ArrowUpDown, CheckCircle2, Clock, AlertCircle, Eye } from 'lucide-react';
+import { ExportToolbar } from '@/components/ExportToolbar';
 
 type SortField = 'date' | 'amount' | 'supplier' | 'category';
 type SortDir = 'asc' | 'desc';
@@ -83,7 +84,7 @@ export function SurgeryTab() {
   const selectClass = "bg-surface border border-border text-text-secondary text-[10px] px-2 py-1.5 focus:outline-none focus:border-primary cursor-pointer appearance-none";
 
   return (
-    <div className="space-y-4 animate-slide-up">
+    <div id="surgery-content" className="space-y-4 animate-slide-up">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -104,6 +105,7 @@ export function SurgeryTab() {
             <option value="">Todas Fontes</option>
             {sources.map(s => <option key={s} value={s}>{s.replace('_PDF', '')}</option>)}
           </select>
+          <ExportToolbar containerId="surgery-content" filename="mesa_cirurgia" title="Mesa de Cirurgia" />
         </div>
       </div>
 

@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { transactions } from '@/lib/data-importer';
 import { formatCurrency, formatCurrencyShort } from '@/lib/mock-data';
 import { Search, Filter, Download, Database, ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react';
+import { ExportToolbar } from '@/components/ExportToolbar';
 
 type SortField = 'date' | 'amount' | 'description' | 'source';
 type SortDir = 'asc' | 'desc';
@@ -69,7 +70,7 @@ export function ExtratosTab() {
   const totalDebits = filtered.filter(t => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
 
   return (
-    <div className="space-y-4 animate-slide-up">
+    <div id="extratos-content" className="space-y-4 animate-slide-up">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -91,9 +92,7 @@ export function ExtratosTab() {
             <option value="">Todas Fontes</option>
             {sources.map(s => <option key={s} value={s}>{s.replace('_PDF', '')}</option>)}
           </select>
-          <button className="bg-surface border border-border text-text-muted px-2.5 py-1.5 hover:text-text-primary hover:border-border-hover transition-colors flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.03em]">
-            <Download className="w-3 h-3" /> CSV
-          </button>
+          <ExportToolbar containerId="extratos-content" filename="extratos_consolidados" title="Extratos Consolidados" />
         </div>
       </div>
 
