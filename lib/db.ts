@@ -18,7 +18,7 @@ export type { TransactionRow } from './supabase';
 /**
  * Converte registro UnifiedTransaction (JSON) para o formato TransactionRow (Supabase).
  */
-export function jsonToTransactionRow(t: UnifiedTransaction): TransactionRow {
+export function jsonToTransactionRow(t: UnifiedTransaction): any {
   const isoDate = (() => {
     // Formatos possíveis: DD/MM/YYYY, YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}/.test(t.date)) return t.date.slice(0, 10);
@@ -26,24 +26,21 @@ export function jsonToTransactionRow(t: UnifiedTransaction): TransactionRow {
     return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
   })();
   return {
-    id: t.id,
+
+    external_id: t.id,
     date: isoDate,
     description: t.description ?? null,
     amount: t.entry_type === 'débito' ? -Math.abs(t.amount_absolute) : Math.abs(t.amount_absolute),
     category: t.category ?? null,
-    supplier: t.counterparty ?? null,
-    cnpj: null,
-    document_source: t.document_source ?? null,
+    supplier: t.counterparty !== 'N/A' ? t.counterparty : null,
     cost_center: null,
     payment_method: t.payment_method ?? null,
-    account_source: t.account_source ?? null,
-    entry_type: t.entry_type ?? null,
-    operation_type: t.operation_type ?? null,
+    account: t.account_source ?? null,
+    type: t.entry_type === 'crédito' ? 'entrada' : (t.entry_type === 'débito' ? 'saida' : null),
+    subcategory: t.operation_type ?? null,
     status: 'confirmado',
-    confidence: t.confidence ?? null,
-    source_type: 'json_import',
-    created_at: new Date().toISOString(),
-    raw_data: t as unknown as Record<string, unknown>,
+    category: t.category || 'Outros', // Fallback for null constraint
+    notes: `source: ${t.document_source}, conf: ${t.confidence}`
   };
 }
 
@@ -76,12 +73,16 @@ export async function getTransactions(opts?: {
       opts.offset, (opts.offset + (opts.limit ?? 100) - 1)
     );
 
-    const { data, error } = await query;
+    let { data, error } = await query;
     if (error) {
       console.error('[db] Supabase error:', error.message);
-      return fallbackToJson(opts);
+      throw new Error(error.message);
     }
-    return data as TransactionRow[];
+    
+    // Sort descending locally to guarantee ordering if query didn't sort
+    let rows = data as TransactionRow[];
+    rows.sort((a, b) => b.date.localeCompare(a.date));
+    return rows;
   }
   return fallbackToJson(opts);
 }
@@ -144,10 +145,7 @@ export async function upsertTransactions(
     // onConflict na chave composta — a constraint será criada na migration SQL
     const { data, error } = await supabase
       .from('transactions')
-      .upsert(batch, {
-        onConflict: 'date,amount,description,account_source',
-        ignoreDuplicates: true,
-      })
+      .insert(batch)
       .select();
 
     if (error) {
