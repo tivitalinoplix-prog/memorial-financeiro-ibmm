@@ -8,43 +8,41 @@ Fusão curada de: **Midnight Banking Dashboard** (paleta dark navy + gradientes)
 
 ---
 
-## Colors
+## Colors (Light Mode)
+- Page Background: #FFFFFF
+- Surface Default: #FFFFFF
+- Card Background: #FFFFFF
+- Card Background Hover: #F4F4F5
+- Surface Elevated: #FFFFFF
+- Text Primary: #09090B
+- Text Secondary: #52525B
+- Text Muted: #71717A
+- Text Ghost: #A1A1AA
+- Border Default: #E4E4E7
+- Border Hover: #D4D4D8
+- Border Accent: #A1A1AA
 
-### Page & Surfaces
-- **Page Background** (#09090B): Zinc-950 — fundo absoluto, preto quase puro
-- **Surface Default** (#18181B): Zinc-900 — sidebar, header, painéis secundários
-- **Card Background** (#1C1C22): Elevação 1 — cards, tiles, linhas de transação
-- **Card Background Hover** (#27272A): Zinc-800 — hover state para cards e rows
-- **Surface Elevated** (#2A2A32): Modais, drawers, popovers
+## Colors (Dark Mode)
+- Page Background: #09090B
+- Surface Default: #18181B
+- Card Background: #1C1C22
+- Card Background Hover: #27272A
+- Surface Elevated: #2A2A32
+- Text Primary: #FAFAFA
+- Text Secondary: #A1A1AA
+- Text Muted: #71717A
+- Text Ghost: #52525B
+- Border Default: #27272A
+- Border Hover: #3F3F46
+- Border Accent: #52525B
 
-### Accent / Primary
-- **Primary** (#14B8A6): Teal-500 — CTAs primários, links, badges ativos, indicadores
-- **Primary Hover** (#2DD4BF): Teal-400 — hover em botões e links
-- **Primary Muted** (#14B8A620): Teal com 12% alpha — backgrounds de badges, highlights suaves
-- **Primary Glow** (#14B8A640): Teal com 25% alpha — ring de foco, sombra de hover
-
-### Foreground / Text
-- **Text Primary** (#FAFAFA): Zinc-50 — títulos, labels primários, valores monetários
-- **Text Secondary** (#A1A1AA): Zinc-400 — corpo, subtítulos, metadata
-- **Text Ghost** (#71717A): Zinc-500 — labels discretos, placeholders, timestamps
-- **Text Muted** (#52525B): Zinc-600 — estados desabilitados, hints
-
-### Status / Signed Amounts
-- **Positive** (#34D399): Emerald-400 — entradas, saldo positivo, sucesso, aprovado
-- **Negative** (#FB7185): Rose-400 — saídas, saldo negativo, erro, rejeitado
-- **Warning** (#FBBF24): Amber-400 — pendente, em análise, atenção
-- **Info** (#38BDF8): Sky-400 — informativo, dicas, novos itens
-
-### Gradient Cards (uso restrito — apenas hero e destaques)
-- **Gradient Teal**: linear-gradient(135deg, #0D9488 0%, #14B8A6 50%, #2DD4BF 100%) — Saldo total, KPIs primários
-- **Gradient Rose**: linear-gradient(135deg, #E11D48 0%, #FB7185 100%) — Alertas críticos, déficit
-- **Gradient Violet**: linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%) — Comunión/Eclese, módulos de IA
-- **Gradient Amber**: linear-gradient(135deg, #D97706 0%, #FBBF24 100%) — Exportações, notificações
-
-### Border
-- **Border Default** (#27272A): Zinc-800 — divisor padrão entre componentes
-- **Border Hover** (#3F3F46): Zinc-700 — hover state de cards e inputs
-- **Border Active** (#14B8A6): Teal — item selecionado, aba ativa, foco
+## Colors (Shared / Accent)
+- Primary: #14B8A6
+- Primary Hover: #2DD4BF
+- Positive: #34D399
+- Negative: #FB7185
+- Warning: #FBBF24
+- Info: #38BDF8
 
 ---
 
