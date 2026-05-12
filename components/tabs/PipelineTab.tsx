@@ -79,28 +79,36 @@ export function PipelineTab() {
     }
   };
 
+  const exportData = QUEUE_ITEMS.map(i => ({
+    'ID': i.id,
+    'Nome': i.name,
+    'Fornecedor': i.supplier,
+    'Status': i.status,
+    'ETA': i.eta
+  }));
+
   return (
     <div id="pipeline-content" className="space-y-5 animate-slide-up">
       
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-[13px] font-bold text-text-primary flex items-center gap-2">
-            <div className="w-0.5 h-4 bg-cyan-500"></div>
-            Pipeline de Integração
+          <h2 className="text-[15px] font-bold text-text-primary flex items-center gap-2" style={{ fontFamily: 'var(--font-geist-sans)' }}>
+            <div className="w-0.5 h-5 bg-cyan-500"></div>
+            HUD de Pipeline
           </h2>
           <span className="text-[10px] text-text-muted mt-0.5 inline-block font-mono">Observabilidade do fluxo de processamento</span>
         </div>
         <div className="flex items-center gap-2">
-          <ExportToolbar containerId="pipeline-content" filename="pipeline_integracao" title="Pipeline de Integração" />
+          <ExportToolbar containerId="pipeline-content" filename="pipeline_integracao" title="Pipeline de Integração" data={exportData} />
           <button
             onClick={() => setIsComunionOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-500/10 border border-violet-500/30 text-violet-400 text-[10px] font-bold hover:bg-violet-500/20 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-500/10 border border-violet-500/30 text-violet-400 text-[10px] font-bold hover:bg-violet-500/20 transition-colors uppercase tracking-[0.05em]"
           >
             <FileSpreadsheet className="w-3 h-3" />
             Sincronizar Comunión
           </button>
-          <span className="flex items-center gap-1.5 text-[10px] bg-emerald-500/10 text-emerald-400 px-2.5 py-1 font-bold uppercase tracking-[0.05em]">
+          <span className="flex items-center gap-1.5 text-[10px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 font-bold uppercase tracking-[0.05em]">
             <Wifi className="w-3 h-3" /> Conectado
           </span>
         </div>
@@ -116,19 +124,19 @@ export function PipelineTab() {
               onClick={() => setSelectedStage(selectedStage === stage.id ? null : stage.id)}
               className={cn(
                 "bg-card border p-4 cursor-pointer transition-all group",
-                selectedStage === stage.id ? "border-primary" : "border-border hover:border-border-hover"
+                selectedStage === stage.id ? "border-primary" : "border-border hover:border-primary/50"
               )}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className={cn(
-                  "p-1.5",
-                  stage.status === 'warning' ? "bg-amber-500/10 text-amber-500" : "bg-primary/10 text-primary"
+                  "p-1.5 border",
+                  stage.status === 'warning' ? "bg-amber-500/10 border-amber-500/30 text-amber-500" : "bg-primary/10 border-primary/30 text-primary"
                 )}>
                   <stage.icon className="w-4 h-4" />
                 </div>
                 <span className="text-[18px] font-bold text-text-primary font-mono">{pct}%</span>
               </div>
-              <div className="text-[11px] font-bold text-text-primary mb-0.5 group-hover:text-primary transition-colors">{stage.label}</div>
+              <div className="text-[11px] font-bold text-text-primary mb-0.5 group-hover:text-primary transition-colors uppercase tracking-[0.05em]">{stage.label}</div>
               <div className="text-[10px] text-text-ghost mb-2">{stage.description}</div>
               <div className="h-1 bg-border overflow-hidden">
                 <div 
@@ -156,14 +164,14 @@ export function PipelineTab() {
                 <div className="flex items-center gap-3">
                   <Icon className={cn("w-4 h-4", getStatusColor(item.status))} />
                   <div>
-                    <div className="text-[12px] font-semibold text-text-primary">{item.name}</div>
-                    <div className="text-[10px] text-text-ghost">{item.supplier}</div>
+                    <div className="text-[12px] font-semibold text-text-primary font-mono">{item.name}</div>
+                    <div className="text-[10px] text-text-ghost uppercase tracking-[0.05em]">{item.supplier}</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={cn("text-[10px] font-mono", getStatusColor(item.status))}>{item.eta}</span>
                   {item.status === 'falha' && (
-                    <button className="text-[9px] bg-rose-500/10 text-rose-400 px-2 py-0.5 font-bold uppercase tracking-[0.05em] hover:bg-rose-500/20 transition-colors">
+                    <button className="text-[9px] bg-rose-500/10 border border-rose-500/30 text-rose-400 px-2 py-0.5 font-bold uppercase tracking-[0.05em] hover:bg-rose-500 hover:text-white transition-colors">
                       Retry
                     </button>
                   )}
@@ -182,7 +190,7 @@ export function PipelineTab() {
           { label: 'Queue Size', value: '3', color: 'text-amber-400' },
           { label: 'Erros (24h)', value: '2', color: 'text-rose-400' },
         ].map((metric, i) => (
-          <div key={i} className="bg-card border border-border p-3 hover:border-border-hover transition-colors">
+          <div key={i} className="bg-card border border-border p-3 hover:border-primary/50 transition-colors">
             <div className="text-[9px] text-text-ghost uppercase tracking-[0.08em] font-bold mb-1">{metric.label}</div>
             <div className={cn("text-lg font-bold font-mono", metric.color)}>{metric.value}</div>
           </div>

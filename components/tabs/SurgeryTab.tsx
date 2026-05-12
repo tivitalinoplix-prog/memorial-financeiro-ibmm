@@ -83,17 +83,32 @@ export function SurgeryTab() {
 
   const selectClass = "bg-surface border border-border text-text-secondary text-[10px] px-2 py-1.5 focus:outline-none focus:border-primary cursor-pointer appearance-none";
 
+  const exportData = useMemo(() => {
+    return filtered.map(t => ({
+      'Data': t.date,
+      'Descrição': t.description,
+      'Categoria': t.category,
+      'Fonte': t.document_source.replace('_PDF', ''),
+      'Valor Numeric': t.amount,
+      'Valor Formatado': formatCurrency(t.amount),
+      'Período': t.month_label,
+      'Status': mapStatus(t)
+    }));
+  }, [filtered]);
+
   return (
     <div id="surgery-content" className="space-y-4 animate-slide-up">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-surface border border-border p-3">
         <div>
-          <h2 className="text-[13px] font-bold text-text-primary flex items-center gap-2">
-            <div className="w-0.5 h-4 bg-rose-500"></div>
+          <h2 className="text-[13px] font-bold text-text-primary flex items-center gap-2 uppercase tracking-[0.05em]">
+            <div className="w-1.5 h-4 bg-rose-500"></div>
             Mesa de Cirurgia
           </h2>
-          <span className="text-[10px] text-text-muted mt-0.5 inline-block font-mono">{filtered.length} transações · {totalPages} páginas</span>
+          <span className="text-[10px] text-text-ghost mt-1 block font-mono">
+            {filtered.length} transações | {totalPages} páginas | Análise aprofundada
+          </span>
         </div>
         
         <div className="flex items-center gap-2 flex-wrap">
@@ -105,7 +120,11 @@ export function SurgeryTab() {
             <option value="">Todas Fontes</option>
             {sources.map(s => <option key={s} value={s}>{s.replace('_PDF', '')}</option>)}
           </select>
-          <ExportToolbar containerId="surgery-content" filename="mesa_cirurgia" title="Mesa de Cirurgia" />
+          <ExportToolbar 
+            data={exportData}
+            filename="Mesa_Cirurgia" 
+            pdfTitle="Relatório de Mesa de Cirurgia" 
+          />
         </div>
       </div>
 

@@ -84,27 +84,37 @@ export function InboxTab() {
     toast.success('Arquivo recebido — processando via OCR...', { duration: 3000 });
   }, []);
 
+  const exportData = filtered.map(i => ({
+    'ID': i.id,
+    'Fornecedor': i.sup,
+    'CNPJ': i.cnpj,
+    'Data': i.date,
+    'Valor': i.val,
+    'Centro Custo': i.cc,
+    'Status': i.status
+  }));
+
   return (
     <div id="inbox-content" className="space-y-4 animate-slide-up">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-[13px] font-bold text-text-primary flex items-center gap-2">
-            <div className="w-0.5 h-4 bg-primary"></div>
-            Inbox de Notas Fiscais
+          <h2 className="text-[15px] font-bold text-text-primary flex items-center gap-2" style={{ fontFamily: 'var(--font-geist-sans)' }}>
+            <div className="w-0.5 h-5 bg-primary"></div>
+            HUD de Documentos
           </h2>
-          <span className="text-[10px] text-text-muted mt-0.5 inline-block font-mono">{filtered.length} documentos</span>
+          <span className="text-[10px] text-text-muted mt-0.5 inline-block font-mono">{filtered.length} notas processadas</span>
         </div>
         
         <div className="flex items-center gap-2">
-          <ExportToolbar containerId="inbox-content" filename="inbox_notas" title="Inbox de Notas Fiscais" />
+          <ExportToolbar containerId="inbox-content" filename="inbox_notas" title="Inbox de Notas Fiscais" data={exportData} />
           <button
             onClick={() => setIsNoteReaderOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/30 text-primary text-[10px] font-bold hover:bg-primary/20 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/30 text-primary text-[10px] font-bold hover:bg-primary/20 transition-colors uppercase tracking-[0.05em]"
           >
             <Brain className="w-3 h-3" />
-            IA Nota
+            IA OCR
           </button>
           <div className="relative w-full sm:w-44">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-ghost" />
@@ -125,12 +135,12 @@ export function InboxTab() {
         onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
         onDragLeave={() => setIsDragOver(false)}
         className={cn(
-          "border-2 border-dashed p-6 text-center transition-all cursor-pointer flex items-center justify-center gap-3",
-          isDragOver ? "border-primary bg-primary/5" : "border-border bg-surface hover:border-border-hover"
+          "border border-dashed p-6 text-center transition-all cursor-pointer flex items-center justify-center gap-3",
+          isDragOver ? "border-primary bg-primary/5" : "border-border bg-surface hover:border-primary/50"
         )}
       >
-        <Upload className={cn("w-5 h-5", isDragOver ? "text-primary" : "text-text-ghost")} />
-        <span className={cn("text-[11px] font-medium", isDragOver ? "text-primary" : "text-text-muted")}>
+        <Upload className={cn("w-4 h-4", isDragOver ? "text-primary" : "text-text-ghost")} />
+        <span className={cn("text-[11px] font-mono tracking-wide uppercase", isDragOver ? "text-primary" : "text-text-muted")}>
           Arraste notas fiscais aqui para extração via OCR
         </span>
       </div>
@@ -144,8 +154,8 @@ export function InboxTab() {
             className={cn(
               "px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.05em] transition-colors",
               filter === f.id 
-                ? "bg-primary/10 text-primary border border-primary/30" 
-                : "bg-surface text-text-muted border border-border hover:border-border-hover hover:text-text-secondary"
+                ? "bg-primary text-background border border-primary" 
+                : "bg-surface text-text-muted border border-border hover:text-text-primary hover:bg-card"
             )}
           >
             {f.label} <span className="ml-1 font-mono opacity-60">{f.count}</span>
@@ -173,7 +183,7 @@ export function InboxTab() {
               {filtered.map(it => (
                 <tr 
                   key={it.id} 
-                  className="hover:bg-primary/[0.03] group cursor-pointer transition-colors"
+                  className="hover:bg-primary/[0.03] group cursor-pointer transition-colors border-b border-border/50"
                   onClick={() => setSelectedDoc(it)}
                 >
                   <td className="w-10">
@@ -182,31 +192,31 @@ export function InboxTab() {
                     </div>
                   </td>
                   <td className="max-w-[200px]">
-                    <div className="text-[12px] font-semibold text-text-primary truncate group-hover:text-primary transition-colors">{it.sup}</div>
+                    <div className="text-[11px] font-semibold text-text-primary truncate group-hover:text-primary transition-colors">{it.sup}</div>
                     <div className="text-[10px] text-text-ghost font-mono mt-0.5">{it.cnpj}</div>
                   </td>
                   <td className="text-text-muted font-mono text-[11px]">{it.date}</td>
-                  <td className="text-right text-[12px] font-bold font-mono text-text-primary group-hover:text-emerald-400 transition-colors">{formatCurrency(it.val)}</td>
-                  <td className="text-text-muted max-w-[120px] truncate text-[11px]">{it.cc}</td>
+                  <td className="text-right text-[12px] font-bold font-mono text-text-primary group-hover:text-primary transition-colors">{formatCurrency(it.val)}</td>
+                  <td className="text-text-muted max-w-[120px] truncate text-[10px] uppercase tracking-[0.05em]">{it.cc}</td>
                   <td className="text-center">
                     <StatusBadge status={mapStatus(it.status)} />
                   </td>
                   <td className="text-right w-[100px]">
                     <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-1.5 text-text-ghost hover:text-text-primary transition-colors hover:bg-surface" title="Ver">
+                      <button className="p-1 border border-border text-text-ghost hover:text-text-primary transition-colors hover:bg-surface" title="Ver">
                         <Eye className="w-3.5 h-3.5" />
                       </button>
                       {['pendente', 'revisao', 'erro'].includes(it.status) && (
                         <>
                           <button 
-                            className="p-1.5 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors" 
+                            className="p-1 border border-emerald-500/30 bg-emerald-500/5 text-emerald-500 hover:bg-emerald-500/20 transition-colors" 
                             title="Aprovar" 
                             onClick={(e) => handleApprove(e, it.id)}
                           >
                             <Check className="w-3.5 h-3.5" />
                           </button>
                           <button 
-                            className="p-1.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors" 
+                            className="p-1 border border-rose-500/30 bg-rose-500/5 text-rose-500 hover:bg-rose-500/20 transition-colors" 
                             title="Rejeitar" 
                             onClick={(e) => handleReject(e, it.id)}
                           >
@@ -220,7 +230,7 @@ export function InboxTab() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="p-12 text-center text-text-muted text-[12px] border-none">
+                  <td colSpan={7} className="p-12 text-center text-text-ghost font-mono text-[10px] uppercase border-none">
                     Nenhuma nota encontrada.
                   </td>
                 </tr>
@@ -264,7 +274,7 @@ export function InboxTab() {
         {selectedDoc && (
           <div className="space-y-5">
             <div className="p-4 bg-surface border border-border">
-              <h3 className="text-[12px] font-bold text-text-primary mb-3">Visão Geral</h3>
+              <h3 className="text-[12px] font-bold text-text-primary mb-3 font-mono uppercase tracking-[0.05em]">Visão Geral</h3>
               <div className="grid grid-cols-2 gap-y-4 gap-x-3 text-[11px]">
                 <div>
                   <p className="text-text-ghost mb-1 uppercase text-[9px] tracking-[0.08em] font-bold">Fornecedor</p>
@@ -280,21 +290,21 @@ export function InboxTab() {
                 </div>
                 <div>
                   <p className="text-text-ghost mb-1 uppercase text-[9px] tracking-[0.08em] font-bold">Valor</p>
-                  <p className="font-bold text-text-primary font-mono">{formatCurrency(selectedDoc.val)}</p>
+                  <p className="font-bold text-primary font-mono">{formatCurrency(selectedDoc.val)}</p>
                 </div>
               </div>
             </div>
             
             <div className="p-4 bg-surface border border-border">
-              <h3 className="text-[12px] font-bold text-text-primary mb-3">Classificação</h3>
+              <h3 className="text-[12px] font-bold text-text-primary mb-3 font-mono uppercase tracking-[0.05em]">Classificação</h3>
               <div className="grid grid-cols-2 gap-y-4 gap-x-3 text-[11px]">
                 <div>
                   <p className="text-text-ghost mb-1 uppercase text-[9px] tracking-[0.08em] font-bold">Centro de Custo</p>
-                  <p className="font-semibold text-text-primary">{selectedDoc.cc}</p>
+                  <p className="font-semibold text-text-primary uppercase">{selectedDoc.cc}</p>
                 </div>
                 <div>
                   <p className="text-text-ghost mb-1 uppercase text-[9px] tracking-[0.08em] font-bold">Tipo</p>
-                  <p className="text-text-primary">{selectedDoc.tipo}</p>
+                  <p className="text-text-primary uppercase">{selectedDoc.tipo}</p>
                 </div>
                 <div className="col-span-2">
                   <p className="text-text-ghost mb-1 uppercase text-[9px] tracking-[0.08em] font-bold">Status</p>
@@ -307,13 +317,13 @@ export function InboxTab() {
               <div className="flex items-center gap-3 mt-6">
                 <button 
                   onClick={(e) => { handleApprove(e, selectedDoc.id); setSelectedDoc(null); }}
-                  className="flex-1 bg-emerald-500 text-white font-bold py-2.5 hover:bg-emerald-600 transition-colors text-[12px]"
+                  className="flex-1 bg-emerald-500/10 border border-emerald-500/50 text-emerald-500 font-bold py-2.5 hover:bg-emerald-500 hover:text-white transition-colors text-[10px] uppercase tracking-widest"
                 >
                   Aprovar
                 </button>
                 <button 
                   onClick={(e) => { handleReject(e, selectedDoc.id); setSelectedDoc(null); }}
-                  className="flex-1 border border-border bg-surface text-text-primary font-bold py-2.5 hover:bg-card transition-colors text-[12px]"
+                  className="flex-1 border border-border bg-surface text-text-primary font-bold py-2.5 hover:bg-card hover:text-rose-400 hover:border-rose-400/50 transition-colors text-[10px] uppercase tracking-widest"
                 >
                   Rejeitar
                 </button>

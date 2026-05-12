@@ -117,7 +117,18 @@ export function DashboardTab() {
             </span>
           </div>
         </div>
-        <ExportToolbar containerId="dashboard-content" filename="dashboard_executivo" title="Painel Executivo — Memorial IBMM" />
+        <ExportToolbar 
+          containerId="dashboard-content" 
+          filename="dashboard_executivo" 
+          title="Painel Executivo — Memorial IBMM" 
+          data={monthly.map(m => ({
+            'Mês': m.m,
+            'Entradas': m.income,
+            'Saídas': m.expense,
+            'Saldo': m.balance,
+            'Transações': m.count
+          }))}
+        />
       </div>
 
       {/* ═══ KPI Cards — Hero Grid ═══ */}

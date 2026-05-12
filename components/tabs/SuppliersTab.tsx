@@ -6,6 +6,7 @@ import { formatCurrency, formatCurrencyShort } from '@/lib/mock-data';
 import { transactions } from '@/lib/data-importer';
 import { Search, Building2, ChevronRight, TrendingUp, FileText } from 'lucide-react';
 import { DetailDrawer } from '@/components/DetailDrawer';
+import { ExportToolbar } from '@/components/ExportToolbar';
 
 export function SuppliersTab() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,27 +42,50 @@ export function SuppliersTab() {
 
   const totalVolume = suppliers.reduce((s, sup) => s + sup.totalSpent, 0);
 
+  const exportData = useMemo(() => {
+    return filtered.map(s => ({
+      'ID': s.id,
+      'Fornecedor': s.name,
+      'Volume Total': s.totalSpent,
+      'Volume Text': formatCurrency(s.totalSpent),
+      'Qtd Transações': s.txCount,
+      'Ticket Médio': formatCurrency(s.totalSpent / s.txCount),
+      'Última Atividade': s.lastDate,
+      'Categorias': s.categories.join(', '),
+      'Classificação Risco': s.riskLevel === 'high' ? 'Alto Volume' : s.riskLevel === 'medium' ? 'Médio Volume' : 'Baixo Volume'
+    }));
+  }, [filtered]);
+
   return (
     <div className="space-y-4 animate-slide-up">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      {/* Header and Toolbar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-surface border border-border p-3">
         <div>
-          <h2 className="text-[13px] font-bold text-text-primary flex items-center gap-2">
-            <div className="w-0.5 h-4 bg-violet-500"></div>
+          <h2 className="text-[13px] font-bold text-text-primary flex items-center gap-2 uppercase tracking-[0.05em]">
+            <div className="w-1.5 h-4 bg-violet-500"></div>
             Diretório de Fornecedores
           </h2>
-          <span className="text-[10px] text-text-muted mt-0.5 inline-block font-mono">{filtered.length} fornecedores · Vol. {formatCurrencyShort(totalVolume)}</span>
+          <span className="text-[10px] text-text-ghost mt-1 block font-mono">
+            {filtered.length} fornecedores catalogados | Volume total: {formatCurrencyShort(totalVolume)}
+          </span>
         </div>
         
-        <div className="relative w-full sm:w-56">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-ghost" />
-          <input 
-            type="text" 
-            placeholder="Buscar fornecedor..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-surface border border-border pl-9 pr-4 py-2 text-[11px] text-text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-text-ghost"
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-ghost" />
+            <input 
+              type="text" 
+              placeholder="Buscar fornecedor..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-background border border-border pl-9 pr-4 py-2 text-[11px] text-text-primary focus:outline-none focus:border-primary transition-colors placeholder:text-text-ghost font-mono"
+            />
+          </div>
+          <ExportToolbar 
+            data={exportData} 
+            filename="Fornecedores_Diretorio" 
+            pdfTitle="Diretório de Fornecedores"
           />
         </div>
       </div>
