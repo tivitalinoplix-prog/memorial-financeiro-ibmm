@@ -2,65 +2,76 @@
 @import "tw-animate-css";
 
 /* ═══════════════════════════════════════════════════════
-   MEMORIAL FINANCEIRO — DESIGN SYSTEM v4.0
-   Quiet Luxury × Brutalism
+   MEMORIAL FINANCEIRO — DESIGN SYSTEM v5.0
+   Quiet Luxury × Neo-Brutalism
+   Fusion: Midnight Banking + Prismatic Pay + IBMM
    ═══════════════════════════════════════════════════════ */
 
 @theme {
-  /* ── Surface System (Deep Dark) ── */
+  /* ── Surface System (Zinc Deep Dark) ── */
   --color-background: #09090b;
   --color-background-alt: #0c0c0e;
   --color-surface: #18181b;
   --color-surface-hover: #1f1f23;
-  --color-card: #141416;
-  --color-card-hover: #1c1c1f;
+  --color-card: #1c1c22;
+  --color-card-hover: #27272a;
+  --color-elevated: #2a2a32;
 
   /* ── Border System ── */
   --color-border: #27272a;
   --color-border-hover: #3f3f46;
   --color-border-accent: #52525b;
+  --color-border-active: #14b8a6;
 
   /* ── Typography ── */
   --color-text-primary: #fafafa;
   --color-text-secondary: #a1a1aa;
-  --color-text-muted: #52525b;
-  --color-text-ghost: #3f3f46;
+  --color-text-muted: #71717a;
+  --color-text-ghost: #52525b;
 
   /* ── Brand Accent (Teal / Operative) ── */
   --color-primary: #14b8a6;
   --color-primary-light: #2dd4bf;
-  --color-primary-glow: rgba(20, 184, 166, 0.15);
   --color-primary-dark: #0d9488;
+  --color-primary-glow: rgba(20, 184, 166, 0.15);
+  --color-primary-muted: rgba(20, 184, 166, 0.08);
 
   /* ── Signal Palette ── */
+  --color-positive: #34d399;
+  --color-negative: #fb7185;
+  --color-warning: #fbbf24;
+  --color-info: #38bdf8;
   --color-gold: #d4af37;
   --color-gold-glow: rgba(212, 175, 55, 0.15);
-  --color-success: #22c55e;
-  --color-error: #ef4444;
-  --color-warning: #f59e0b;
 
   /* ── Spectrum ── */
-  --color-violet: #8b5cf6;
-  --color-cyan: #06b6d4;
-  --color-emerald: #10b981;
-  --color-amber: #f59e0b;
-  --color-rose: #f43f5e;
+  --color-violet: #a78bfa;
+  --color-cyan: #22d3ee;
+  --color-emerald: #34d399;
+  --color-amber: #fbbf24;
+  --color-rose: #fb7185;
   --color-orange: #f97316;
-  --color-indigo: #6366f1;
+  --color-indigo: #818cf8;
+
+  /* ── Legacy compat ── */
+  --color-success: #34d399;
+  --color-error: #fb7185;
 }
 
 @layer base {
   body {
     @apply bg-background text-text-primary antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  /* Selection */
   ::selection {
     background: rgba(20, 184, 166, 0.25);
   }
 }
 
-/* ── Scrollbar (Brutalist Thin) ── */
+/* ═══════════════════════════════════════════════════════
+   SCROLLBAR — Brutalist Thin
+   ═══════════════════════════════════════════════════════ */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -76,37 +87,32 @@
   background: #3f3f46;
 }
 
-/* ── Scrollbar Firefox ── */
 * {
   scrollbar-width: thin;
   scrollbar-color: #27272a transparent;
 }
 
-/* ── Hide Scrollbar Utility ── */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+.hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-/* ── Custom Scrollbar (Sidebar) ── */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 3px;
-}
+.custom-scrollbar::-webkit-scrollbar { width: 3px; }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #27272a;
   border-radius: 0;
 }
 
-/* ── Brutalist Data Table ── */
+/* ═══════════════════════════════════════════════════════
+   BRUTALIST DATA TABLE
+   ═══════════════════════════════════════════════════════ */
 .brutal-table th {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 10px;
-  color: #52525b;
+  color: #71717a;
   border-bottom: 2px solid #27272a;
   padding: 12px 16px;
 }
@@ -119,27 +125,177 @@
   background: rgba(20, 184, 166, 0.03);
 }
 
-/* ── Keyframes ── */
-@keyframes subtle-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+/* ═══════════════════════════════════════════════════════
+   GRADIENT CARDS — Hero Accent
+   ═══════════════════════════════════════════════════════ */
+.gradient-teal {
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%);
+}
+.gradient-rose {
+  background: linear-gradient(135deg, #e11d48 0%, #fb7185 100%);
+}
+.gradient-violet {
+  background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+}
+.gradient-amber {
+  background: linear-gradient(135deg, #d97706 0%, #fbbf24 100%);
+}
+.gradient-midnight {
+  background: linear-gradient(135deg, #040d3f 0%, #1d2552 100%);
 }
 
+/* ═══════════════════════════════════════════════════════
+   GLOW EFFECTS
+   ═══════════════════════════════════════════════════════ */
+.glow-teal {
+  box-shadow: 0 0 24px rgba(20, 184, 166, 0.12);
+}
+.glow-rose {
+  box-shadow: 0 0 24px rgba(251, 113, 133, 0.12);
+}
+.glow-violet {
+  box-shadow: 0 0 24px rgba(167, 139, 250, 0.12);
+}
+.glow-gold {
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.12);
+}
+
+/* ═══════════════════════════════════════════════════════
+   KEYFRAMES & ANIMATIONS
+   ═══════════════════════════════════════════════════════ */
 @keyframes slide-up {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-slide-up {
-  animation: slide-up 0.4s ease-out forwards;
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Safe Area (Mobile) ── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes subtle-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes border-glow {
+  0%, 100% { border-color: rgba(20, 184, 166, 0.2); }
+  50% { border-color: rgba(20, 184, 166, 0.5); }
+}
+
+@keyframes progress-fill {
+  from { width: 0; }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out forwards;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-in forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #1c1c22, #27272a, #1c1c22);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.animate-count-up {
+  animation: count-up 0.6s ease-out forwards;
+}
+
+.animate-border-glow {
+  animation: border-glow 2s ease-in-out infinite;
+}
+
+.animate-progress-fill {
+  animation: progress-fill 1s ease-out forwards;
+}
+
+/* ── Stagger Delays ── */
+.stagger-1 { animation-delay: 0ms; }
+.stagger-2 { animation-delay: 50ms; }
+.stagger-3 { animation-delay: 100ms; }
+.stagger-4 { animation-delay: 150ms; }
+.stagger-5 { animation-delay: 200ms; }
+.stagger-6 { animation-delay: 250ms; }
+
+/* ═══════════════════════════════════════════════════════
+   SKELETON LOADING
+   ═══════════════════════════════════════════════════════ */
+.skeleton {
+  background: linear-gradient(90deg, #1c1c22 25%, #27272a 50%, #1c1c22 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════ */
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* ── Tabular Nums ── */
 .font-tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* ── Status Indicator Bar ── */
+.status-bar-positive { border-left: 3px solid #34d399; }
+.status-bar-negative { border-left: 3px solid #fb7185; }
+.status-bar-warning { border-left: 3px solid #fbbf24; }
+.status-bar-info { border-left: 3px solid #38bdf8; }
+
+/* ── Hover Card Lift ── */
+.card-interactive {
+  transition: all 150ms ease;
+}
+.card-interactive:hover {
+  border-color: #3f3f46;
+}
+
+/* ── Focus Ring (Brutalista) ── */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.25);
+  border-color: #14b8a6;
+}
+
+/* ── Hero Balance Section ── */
+.hero-balance {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, rgba(20, 184, 166, 0.02) 100%);
+  border: 1px solid rgba(20, 184, 166, 0.15);
+}
+
+/* ── Active Tab Indicator ── */
+.tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 2px;
+  background: #14b8a6;
 }

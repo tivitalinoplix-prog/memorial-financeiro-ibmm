@@ -9,15 +9,15 @@ import { formatCurrencyShort, formatNumber, formatCurrency } from '@/lib/mock-da
 import { cn } from '@/lib/utils';
 import { KpiCard } from '@/components/KpiCard';
 import { ExportToolbar } from '@/components/ExportToolbar';
-import { AlertTriangle, TrendingUp, GitMerge, FileCheck, CheckCircle, Upload, Flame, Activity } from 'lucide-react';
+import { AlertTriangle, TrendingUp, GitMerge, Activity, Zap, BarChart3 } from 'lucide-react';
 import { transactions } from '@/lib/data-importer';
 
-/* ── Tooltip Brutalista ── */
+/* ── Tooltip Brutalista v5 ── */
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-background border border-border p-3 text-[11px]">
-        <p className="text-text-primary font-bold mb-2">{label}</p>
+      <div className="bg-elevated border border-border p-3 text-[11px] animate-fade-in" style={{ borderRadius: 0 }}>
+        <p className="text-text-primary font-bold mb-2 font-mono text-[10px]">{label}</p>
         {payload.map((entry: any, index: number) => (
           <div key={`item-${index}`} className="flex items-center gap-2 mb-1">
             <div className="w-2 h-2" style={{ backgroundColor: entry.color }} />
@@ -37,9 +37,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const PILLARS_DATA = [
   { name: 'Adorar', value: 35, color: '#d4af37' },
   { name: 'Discipular', value: 20, color: '#14b8a6' },
-  { name: 'Servir', value: 15, color: '#22c55e' },
-  { name: 'Comungar', value: 10, color: '#8b5cf6' },
-  { name: 'Alcançar', value: 20, color: '#ef4444' },
+  { name: 'Servir', value: 15, color: '#34d399' },
+  { name: 'Comungar', value: 10, color: '#a78bfa' },
+  { name: 'Alcançar', value: 20, color: '#fb7185' },
 ];
 
 export function DashboardTab() {
@@ -81,7 +81,7 @@ export function DashboardTab() {
       .sort((a,b) => b[1] - a[1])
       .map(([name, val], i) => ({ 
         name, val, 
-        col: ['#6366f1', '#8b5cf6', '#06b6d4', '#f59e0b', '#f97316', '#10b981', '#ec4899', '#14b8a6'][i % 8] 
+        col: ['#818cf8', '#a78bfa', '#22d3ee', '#fbbf24', '#f97316', '#34d399', '#fb7185', '#14b8a6'][i % 8] 
       }));
 
     const totalTxs = transactions.length;
@@ -93,69 +93,90 @@ export function DashboardTab() {
   const sourcesData = Object.entries(sourcesMap).map(([name, value], i) => ({
     name: name.replace('_PDF', ''),
     value,
-    color: ['#10b981', '#f59e0b', '#06b6d4', '#8b5cf6'][i % 4]
+    color: ['#34d399', '#fbbf24', '#22d3ee', '#a78bfa'][i % 4]
   })).sort((a,b) => b.value - a.value);
 
   const saneamento = Math.round((totalTxs / 2000) * 100);
 
   return (
-    <div id="dashboard-content" className="space-y-5 animate-slide-up">
+    <div id="dashboard-content" className="space-y-5">
       
-      {/* Header com Export */}
-      <div className="flex items-center justify-between">
+      {/* ═══ Hero Header ═══ */}
+      <div className="flex items-center justify-between animate-slide-up">
         <div>
-          <h2 className="text-[13px] font-bold text-text-primary flex items-center gap-2">
-            <div className="w-0.5 h-4 bg-primary"></div>
+          <h2 className="text-[15px] font-bold text-text-primary flex items-center gap-2" style={{ fontFamily: 'var(--font-geist-sans)' }}>
+            <div className="w-0.5 h-5 bg-primary"></div>
             Painel Executivo
           </h2>
-          <span className="text-[10px] text-text-muted font-mono">{formatNumber(totalTxs)} transações processadas</span>
+          <div className="flex items-center gap-3 mt-1">
+            <span className="text-[10px] text-text-muted font-mono">{formatNumber(totalTxs)} transações</span>
+            <span className="w-px h-3 bg-border"></span>
+            <span className="text-[10px] text-positive flex items-center gap-1">
+              <Zap className="w-3 h-3" />
+              Atualizado agora
+            </span>
+          </div>
         </div>
         <ExportToolbar containerId="dashboard-content" filename="dashboard_executivo" title="Painel Executivo — Memorial IBMM" />
       </div>
 
+      {/* ═══ KPI Cards — Hero Grid ═══ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard 
-          title="Total Entradas" 
-          value={formatCurrencyShort(totalIncome)}
-          icon={TrendingUp}
-          colorStyle="success"
-          progress={{ value: 100, colorClass: 'bg-emerald-500', label: 'Receitas do Período' }}
-        />
-        <KpiCard 
-          title="Total Saídas" 
-          value={formatCurrencyShort(totalExpense)}
-          icon={AlertTriangle}
-          colorStyle="danger"
-          progress={{ value: 100, colorClass: 'bg-rose-500', label: 'Despesas do Período' }}
-        />
-        <KpiCard 
-          title="Saneamento" 
-          value={`${saneamento}%`}
-          icon={Activity}
-          colorStyle="warning"
-          trend={{ value: `${totalTxs}/2000`, isUp: true }}
-          progress={{ value: saneamento, colorClass: 'bg-amber-500', label: 'Notas Processadas' }}
-        />
-        <KpiCard 
-          title="Saldo Líquido" 
-          value={formatCurrencyShort(totalIncome - totalExpense)}
-          icon={GitMerge}
-          colorStyle="info"
-          progress={{ value: 100, colorClass: 'bg-primary', label: 'Fluxo de Caixa' }}
-        />
+        <div className="animate-slide-up stagger-1">
+          <KpiCard 
+            title="Total Entradas" 
+            value={formatCurrencyShort(totalIncome)}
+            icon={TrendingUp}
+            colorStyle="success"
+            variant="default"
+            progress={{ value: 100, colorClass: 'bg-positive', label: 'Receitas do Período' }}
+          />
+        </div>
+        <div className="animate-slide-up stagger-2">
+          <KpiCard 
+            title="Total Saídas" 
+            value={formatCurrencyShort(totalExpense)}
+            icon={AlertTriangle}
+            colorStyle="danger"
+            progress={{ value: 100, colorClass: 'bg-rose', label: 'Despesas do Período' }}
+          />
+        </div>
+        <div className="animate-slide-up stagger-3">
+          <KpiCard 
+            title="Saneamento" 
+            value={`${saneamento}%`}
+            icon={Activity}
+            colorStyle="warning"
+            trend={{ value: `${totalTxs}/2000`, isUp: true }}
+            progress={{ value: saneamento, colorClass: 'bg-amber', label: 'Notas Processadas' }}
+          />
+        </div>
+        <div className="animate-slide-up stagger-4">
+          <KpiCard 
+            title="Saldo Líquido" 
+            value={formatCurrencyShort(totalIncome - totalExpense)}
+            icon={GitMerge}
+            colorStyle="info"
+            variant="hero"
+            progress={{ value: 100, colorClass: 'bg-primary', label: 'Fluxo de Caixa' }}
+          />
+        </div>
       </div>
 
       {/* ═══ Main Grid ═══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] xl:grid-cols-[68%_32%] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[65%_35%] xl:grid-cols-[68%_32%] gap-4 animate-slide-up stagger-5">
         
         {/* ── COLUNA ESQUERDA ── */}
         <div className="space-y-4 flex flex-col min-h-0">
           
           {/* Gráfico Principal */}
-          <div className="bg-card border border-border p-5 hover:border-border-hover transition-colors flex-none group">
+          <div className="bg-card border border-border p-5 card-interactive flex-none group">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-[13px] font-bold text-text-primary mb-0.5 group-hover:text-primary transition-colors">Evolução Mensal</h3>
+                <h3 className="text-[13px] font-bold text-text-primary mb-0.5 group-hover:text-primary transition-colors flex items-center gap-2" style={{ fontFamily: 'var(--font-geist-sans)' }}>
+                  <BarChart3 className="w-3.5 h-3.5 text-text-ghost" />
+                  Evolução Mensal
+                </h3>
                 <p className="text-[10px] text-text-muted">Entradas vs. Saídas — dados extraídos dos PDFs financeiros</p>
               </div>
             </div>
@@ -164,29 +185,29 @@ export function DashboardTab() {
                 <AreaChart data={monthly} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorInc" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#34d399" stopOpacity={0.25}/>
+                      <stop offset="95%" stopColor="#34d399" stopOpacity={0}/>
                     </linearGradient>
                     <linearGradient id="colorExp" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#fb7185" stopOpacity={0.25}/>
+                      <stop offset="95%" stopColor="#fb7185" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(63,63,70,0.3)" vertical={false} />
-                  <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#52525b' }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#52525b' }} tickFormatter={(val) => formatCurrencyShort(val)} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(39,39,42,0.4)" vertical={false} />
+                  <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#71717a', fontFamily: 'var(--font-mono)' }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#71717a', fontFamily: 'var(--font-mono)' }} tickFormatter={(val) => formatCurrencyShort(val)} />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend iconType="plainline" wrapperStyle={{ fontSize: '10px', color: '#a1a1aa', paddingTop: '10px' }} />
-                  <Area type="monotone" name="Entradas" dataKey="income" stroke="#10b981" fillOpacity={1} fill="url(#colorInc)" strokeWidth={2} activeDot={{ r: 4, stroke: '#09090b', strokeWidth: 2 }} />
-                  <Area type="monotone" name="Saídas" dataKey="expense" stroke="#f43f5e" fillOpacity={1} fill="url(#colorExp)" strokeWidth={2} activeDot={{ r: 4, stroke: '#09090b', strokeWidth: 2 }} />
+                  <Area type="monotone" name="Entradas" dataKey="income" stroke="#34d399" fillOpacity={1} fill="url(#colorInc)" strokeWidth={2} activeDot={{ r: 4, stroke: '#09090b', strokeWidth: 2 }} />
+                  <Area type="monotone" name="Saídas" dataKey="expense" stroke="#fb7185" fillOpacity={1} fill="url(#colorExp)" strokeWidth={2} activeDot={{ r: 4, stroke: '#09090b', strokeWidth: 2 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           {/* Tabela Resumo Mensal */}
-          <div className="bg-card border border-border p-5 hover:border-border-hover transition-colors flex-1 flex flex-col min-h-0">
-            <h3 className="text-[11px] font-bold text-text-muted uppercase tracking-[0.08em] mb-3">Resumo Mensal</h3>
+          <div className="bg-card border border-border p-5 card-interactive flex-1 flex flex-col min-h-0">
+            <h3 className="text-[11px] font-bold text-text-ghost uppercase tracking-[0.08em] mb-3">Resumo Mensal</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-left brutal-table">
                 <thead>
@@ -202,9 +223,9 @@ export function DashboardTab() {
                   {monthly.slice(-6).map((m, i) => (
                     <tr key={i} className="group cursor-default">
                       <td className="font-semibold text-text-primary group-hover:text-primary transition-colors">{m.m}</td>
-                      <td className="text-right font-tabular-nums text-emerald-400 font-mono">{formatCurrencyShort(m.income)}</td>
-                      <td className="text-right font-tabular-nums text-rose-400 font-mono">{formatCurrencyShort(m.expense)}</td>
-                      <td className={cn("text-right font-tabular-nums font-mono", m.balance >= 0 ? "text-emerald-400" : "text-rose-400")}>{formatCurrencyShort(m.balance)}</td>
+                      <td className="text-right font-tabular-nums text-positive font-mono">{formatCurrencyShort(m.income)}</td>
+                      <td className="text-right font-tabular-nums text-rose font-mono">{formatCurrencyShort(m.expense)}</td>
+                      <td className={cn("text-right font-tabular-nums font-mono", m.balance >= 0 ? "text-positive" : "text-rose")}>{formatCurrencyShort(m.balance)}</td>
                       <td className="text-right text-text-muted font-mono">{m.count}</td>
                     </tr>
                   ))}
@@ -218,9 +239,9 @@ export function DashboardTab() {
         <div className="space-y-4 flex flex-col min-h-0">
           
           {/* 5 Pilares Estratégicos */}
-          <div className="bg-card border border-border p-5 flex-none hover:border-border-hover transition-colors">
-            <h3 className="text-[11px] font-bold text-text-muted uppercase tracking-[0.08em] mb-1">5 Pilares Estratégicos</h3>
-            <p className="text-[10px] text-text-ghost mb-3">Distribuição de investimentos por propósito</p>
+          <div className="bg-card border border-border p-5 flex-none card-interactive">
+            <h3 className="text-[11px] font-bold text-text-ghost uppercase tracking-[0.08em] mb-1">5 Pilares Estratégicos</h3>
+            <p className="text-[10px] text-text-ghost/60 mb-3">Distribuição de investimentos por propósito</p>
             <div className="h-[160px] w-full flex justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -240,11 +261,11 @@ export function DashboardTab() {
           </div>
 
           {/* Diagnóstico de Integração */}
-          <div className="bg-card border border-border p-5 flex-none hover:border-border-hover transition-colors">
+          <div className="bg-card border border-border p-5 flex-none card-interactive">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[11px] font-bold text-text-muted uppercase tracking-[0.08em]">Diagnóstico</h3>
-              <span className="text-[9px] text-emerald-400 bg-emerald-400/10 px-2 py-0.5 font-bold flex items-center gap-1 uppercase tracking-[0.05em]">
-                <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse"></span>
+              <h3 className="text-[11px] font-bold text-text-ghost uppercase tracking-[0.08em]">Diagnóstico</h3>
+              <span className="text-[9px] text-positive bg-positive/10 px-2 py-0.5 font-bold flex items-center gap-1 uppercase tracking-[0.05em]">
+                <span className="w-1.5 h-1.5 bg-positive animate-pulse rounded-full"></span>
                 Sync OK
               </span>
             </div>
@@ -256,10 +277,10 @@ export function DashboardTab() {
                 { label: 'Revisão', desc: 'Transferências internas requerem conciliação T-1', status: 'warn' },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3">
-                  <div className={cn("w-1.5 h-1.5 mt-1.5 shrink-0", item.status === 'ok' ? 'bg-emerald-500' : 'bg-amber-500')}></div>
+                  <div className={cn("w-1.5 h-1.5 mt-1.5 shrink-0", item.status === 'ok' ? 'bg-positive' : 'bg-amber')}></div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-0.5">
-                      <span className={cn("text-[10px] font-bold uppercase tracking-[0.05em]", item.status === 'ok' ? 'text-emerald-400' : 'text-amber-400')}>{item.label}</span>
+                      <span className={cn("text-[10px] font-bold uppercase tracking-[0.05em]", item.status === 'ok' ? 'text-positive' : 'text-amber')}>{item.label}</span>
                     </div>
                     <p className="text-[11px] text-text-secondary leading-snug">{item.desc}</p>
                   </div>
@@ -269,8 +290,8 @@ export function DashboardTab() {
           </div>
 
           {/* Top Categorias */}
-          <div className="bg-card border border-border p-5 flex-none hover:border-border-hover transition-colors">
-            <h3 className="text-[11px] font-bold text-text-muted uppercase tracking-[0.08em] mb-3">Top Categorias</h3>
+          <div className="bg-card border border-border p-5 flex-none card-interactive">
+            <h3 className="text-[11px] font-bold text-text-ghost uppercase tracking-[0.08em] mb-3">Top Categorias</h3>
             <div className="space-y-2.5">
               {categories.slice(0, 5).map((c, i) => (
                 <div key={i} className="flex items-center gap-2 group cursor-default">
@@ -278,7 +299,7 @@ export function DashboardTab() {
                     {c.name} 
                   </div>
                   <div className="flex-1 h-1 bg-border overflow-hidden">
-                    <div className="h-full transition-all duration-1000" style={{ width: `${(c.val / categories[0].val) * 100}%`, backgroundColor: c.col }}></div>
+                    <div className="h-full animate-progress-fill" style={{ width: `${(c.val / categories[0].val) * 100}%`, backgroundColor: c.col }}></div>
                   </div>
                   <div className="text-[10px] text-text-primary font-tabular-nums text-right min-w-[55px] shrink-0 font-mono">
                     {formatCurrencyShort(c.val)}
@@ -290,7 +311,7 @@ export function DashboardTab() {
 
           {/* Gráficos Mini */}
           <div className="grid grid-cols-2 gap-3 flex-none">
-            <div className="bg-card border border-border p-4 hover:border-border-hover transition-colors relative">
+            <div className="bg-card border border-border p-4 card-interactive relative">
               <h3 className="text-[9px] font-bold text-text-ghost uppercase tracking-[0.08em] mb-2">Origem</h3>
               <div className="h-[100px] w-full flex justify-center">
                 <ResponsiveContainer width="100%" height="100%">
@@ -304,12 +325,12 @@ export function DashboardTab() {
                 </ResponsiveContainer>
               </div>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-3">
-                <span className="text-lg font-bold text-text-primary leading-none">{sourcesData.length}</span>
+                <span className="text-lg font-bold text-text-primary leading-none" style={{ fontFamily: 'var(--font-geist-sans)' }}>{sourcesData.length}</span>
                 <span className="text-[8px] text-text-ghost uppercase">Fontes</span>
               </div>
             </div>
             
-            <div className="bg-card border border-border p-4 hover:border-border-hover transition-colors relative">
+            <div className="bg-card border border-border p-4 card-interactive relative">
               <h3 className="text-[9px] font-bold text-text-ghost uppercase tracking-[0.08em] mb-2">Natureza</h3>
               <div className="h-[100px] w-full flex justify-center">
                 <ResponsiveContainer width="100%" height="100%">
@@ -321,14 +342,14 @@ export function DashboardTab() {
                       ]}
                       innerRadius="70%" outerRadius="95%" paddingAngle={3} dataKey="value" stroke="none"
                     >
-                      <Cell fill="#10b981" />
-                      <Cell fill="#f43f5e" />
+                      <Cell fill="#34d399" />
+                      <Cell fill="#fb7185" />
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
               </div>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-3">
-                <span className={cn("text-sm font-bold leading-none", (totalIncome-totalExpense) >= 0 ? "text-emerald-400" : "text-rose-400")}>
+                <span className={cn("text-sm font-bold leading-none font-mono", (totalIncome-totalExpense) >= 0 ? "text-positive" : "text-rose")}>
                   {formatCurrencyShort(totalIncome - totalExpense)}
                 </span>
                 <span className="text-[8px] text-text-ghost uppercase mt-0.5">Líquido</span>
