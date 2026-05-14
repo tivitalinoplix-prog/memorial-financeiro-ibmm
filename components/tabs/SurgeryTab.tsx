@@ -6,7 +6,7 @@ import { getTransactions, TransactionRow } from '@/lib/db';
 import { formatCurrency, formatCurrencyShort } from '@/lib/mock-data';
 import { StatusBadge, StatusType } from '@/components/StatusBadge';
 import { DetailDrawer } from '@/components/DetailDrawer';
-import { Search, ChevronDown, ChevronUp, ArrowUpDown, Eye, Loader2, CheckCircle2, Sparkles, Camera } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, ArrowUpDown, Eye, Loader2, CheckCircle2, Sparkles, Camera, ImagePlus, FolderOpen, X } from 'lucide-react';
 import { ExportToolbar } from '@/components/ExportToolbar';
 
 type SortField = 'date' | 'amount' | 'supplier' | 'category';
@@ -25,7 +25,9 @@ export function SurgeryTab() {
   const ITEMS_PER_PAGE = 50;
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const cameraInputRef = React.useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [showSourceMenu, setShowSourceMenu] = useState(false);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -71,9 +73,10 @@ export function SurgeryTab() {
         loadData();
       }, 5000);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro no upload:', error);
-      alert('Erro ao enviar o comprovante. Verifique se o n8n está ativo.');
+      const errMsg = error instanceof Error ? error.message : String(error);
+      alert(`Erro ao enviar o comprovante.\n\nDetalhes: ${errMsg}\n\nVerifique se o n8n está ativo.`);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -420,7 +423,7 @@ export function SurgeryTab() {
 
       {/* FAB - Floating Action Button for Scanner */}
       <button 
-        onClick={() => fileInputRef.current?.click()}
+        onClick={() => setShowSourceMenu(true)}
         disabled={isUploading}
         className={cn(
           "fixed bottom-6 right-6 w-14 h-14 bg-primary hover:bg-primary-dark text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 z-50",
@@ -430,11 +433,103 @@ export function SurgeryTab() {
         <Camera className="w-6 h-6" />
       </button>
 
-      {/* Hidden File Input */}
+      {/* Source Selection Action Sheet */}
+      {showSourceMenu && (
+        <div className="fixed inset-0 z-[70] flex items-end justify-center" onClick={() => setShowSourceMenu(false)}>
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          {/* Menu */}
+          <div
+            className="relative w-full max-w-md mx-4 mb-6 bg-surface border border-border rounded-2xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 pt-4 pb-2">
+              <span className="text-[13px] font-bold text-text-primary uppercase tracking-widest">Enviar Comprovante</span>
+              <button onClick={() => setShowSourceMenu(false)} className="text-text-ghost hover:text-text-primary p-1 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="px-3 pb-4 space-y-1">
+              {/* Camera Traseira */}
+              <button
+                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-primary/10 transition-colors text-left"
+                onClick={() => {
+                  setShowSourceMenu(false);
+                  if (cameraInputRef.current) {
+                    cameraInputRef.current.setAttribute('capture', 'environment');
+                    cameraInputRef.current.click();
+                  }
+                }}
+              >
+                <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
+                  <Camera className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <div className="text-[12px] font-bold text-text-primary">Tirar Foto</div>
+                  <div className="text-[10px] text-text-ghost">Usar câmera traseira</div>
+                </div>
+              </button>
+              {/* Galeria */}
+              <button
+                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-primary/10 transition-colors text-left"
+                onClick={() => {
+                  setShowSourceMenu(false);
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
+                }}
+              >
+                <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center">
+                  <ImagePlus className="w-5 h-5 text-emerald-500" />
+                </div>
+                <div>
+                  <div className="text-[12px] font-bold text-text-primary">Galeria de Fotos</div>
+                  <div className="text-[10px] text-text-ghost">Escolher imagem da galeria</div>
+                </div>
+              </button>
+              {/* Arquivo */}
+              <button
+                className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-primary/10 transition-colors text-left"
+                onClick={() => {
+                  setShowSourceMenu(false);
+                  if (fileInputRef.current) {
+                    fileInputRef.current.setAttribute('accept', 'image/*,.pdf');
+                    fileInputRef.current.click();
+                    // Reset accept after a tick
+                    setTimeout(() => {
+                      if (fileInputRef.current) fileInputRef.current.setAttribute('accept', 'image/*');
+                    }, 500);
+                  }
+                }}
+              >
+                <div className="w-10 h-10 rounded-full bg-amber-500/15 flex items-center justify-center">
+                  <FolderOpen className="w-5 h-5 text-amber-500" />
+                </div>
+                <div>
+                  <div className="text-[12px] font-bold text-text-primary">Arquivo / PDF</div>
+                  <div className="text-[10px] text-text-ghost">Selecionar documento do aparelho</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hidden File Inputs */}
+      {/* Gallery / File picker (no capture) */}
       <input 
         type="file" 
         accept="image/*" 
         ref={fileInputRef} 
+        onChange={handleFileUpload}
+        className="hidden" 
+      />
+      {/* Camera input (with capture) */}
+      <input 
+        type="file" 
+        accept="image/*" 
+        capture="environment"
+        ref={cameraInputRef} 
         onChange={handleFileUpload}
         className="hidden" 
       />
