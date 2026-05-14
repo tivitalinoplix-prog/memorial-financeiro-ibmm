@@ -54,8 +54,8 @@ export function SurgeryTab() {
       const formData = new FormData();
       formData.append('comprovante', file);
 
-      // Webhook n8n production URL
-      const response = await fetch('https://vitalino.app.n8n.cloud/webhook/comprovantes-2026', {
+      // Use local Next.js proxy to bypass CORS
+      const response = await fetch('/api/upload-comprovante', {
         method: 'POST',
         body: formData,
       });
@@ -434,7 +434,6 @@ export function SurgeryTab() {
       <input 
         type="file" 
         accept="image/*" 
-        capture="environment" 
         ref={fileInputRef} 
         onChange={handleFileUpload}
         className="hidden" 
