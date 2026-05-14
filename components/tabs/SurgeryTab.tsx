@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import imageCompression from 'browser-image-compression';
 import { cn } from '@/lib/utils';
 import { getTransactions, TransactionRow } from '@/lib/db';
 import { formatCurrency, formatCurrencyShort } from '@/lib/mock-data';
@@ -53,8 +54,25 @@ export function SurgeryTab() {
 
     setIsUploading(true);
     try {
+      // Compress image before upload to avoid Vercel 4.5MB limit and speed up upload
+      let compressedFile = file;
+      if (file.type.startsWith('image/')) {
+        const options = {
+          maxSizeMB: 1, // Max 1MB
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+          initialQuality: 0.8,
+        };
+        try {
+          compressedFile = await imageCompression(file, options);
+          console.log(`[upload] Original: ${(file.size/1024/1024).toFixed(2)}MB -> Compressed: ${(compressedFile.size/1024/1024).toFixed(2)}MB`);
+        } catch (compErr) {
+          console.error('[upload] Compression failed, using original file', compErr);
+        }
+      }
+
       const formData = new FormData();
-      formData.append('comprovante', file);
+      formData.append('comprovante', compressedFile, file.name);
 
       // Use local Next.js proxy to bypass CORS
       const response = await fetch('/api/upload-comprovante', {

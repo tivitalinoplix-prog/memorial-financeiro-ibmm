@@ -50,19 +50,21 @@ export async function POST(request: Request) {
 
     console.log('[upload-proxy] Received file:', { fileName, fileType, fileSize });
 
-    // Create new FormData to forward to n8n
-    const outgoingFormData = new FormData();
-    outgoingFormData.append('comprovante', file, fileName);
+    // Send using native FormData so n8n maps it to the 'comprovante' property
+    const formData = new FormData();
+    formData.append('comprovante', file, fileName);
 
-    console.log('[upload-proxy] Forwarding to n8n:', {
+    console.log('[upload-proxy] Forwarding FormData to n8n:', {
       webhookUrl: N8N_WEBHOOK_URL,
       fileSize,
+      fileType,
+      fileName
     });
 
     // Forward to n8n webhook
     const n8nResponse = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
-      body: outgoingFormData,
+      body: formData,
     });
 
     const responseText = await n8nResponse.text();
