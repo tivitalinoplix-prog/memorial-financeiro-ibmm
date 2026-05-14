@@ -45,11 +45,19 @@ export async function POST(request: Request) {
       date: formatDate(date),
       description: description || 'Inserido via Forms',
       amount: parsedAmount || 0,
-      type: type === 'Entrada' ? 'entrada' : 'saida',
+      entry_type: type === 'Entrada' ? 'crédito' : 'débito',
       category: category || 'Outros',
       account: account || 'CAIXA_TESOURARIA',
-      status: status || 'completed',
-      external_id: external_id || `forms-${Date.now()}`
+      status: status === 'pending' ? 'pendente' : 'confirmado',
+      source_type: 'manual',
+      supplier: null,
+      cnpj: null,
+      document_source: null,
+      cost_center: null,
+      payment_method: null,
+      operation_type: null,
+      confidence: null,
+      raw_data: { external_id: external_id || `forms-${Date.now()}` }
     };
 
     // Insere no banco com privilégios admin

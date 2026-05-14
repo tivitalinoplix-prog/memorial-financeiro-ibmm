@@ -31,7 +31,6 @@ export function jsonToTransactionRow(t: UnifiedTransaction): any {
     date: isoDate,
     description: t.description ?? null,
     amount: t.entry_type === 'débito' ? -Math.abs(t.amount_absolute) : Math.abs(t.amount_absolute),
-    category: t.category ?? null,
     supplier: t.counterparty !== 'N/A' ? t.counterparty : null,
     cost_center: null,
     payment_method: t.payment_method ?? null,
@@ -69,7 +68,7 @@ export async function getTransactions(opts?: {
     if (opts?.source)   query = query.eq('source_type', opts.source);
     if (opts?.status)   query = query.eq('status', opts.status);
     if (opts?.limit)    query = query.limit(opts.limit);
-    if (opts?.offset)   query = (query as ReturnType<typeof supabase.from>).range(
+    if (opts?.offset)   query = (query as any).range(
       opts.offset, (opts.offset + (opts.limit ?? 100) - 1)
     );
 
