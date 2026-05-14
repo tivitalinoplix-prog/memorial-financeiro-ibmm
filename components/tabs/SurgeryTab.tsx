@@ -62,8 +62,23 @@ export function SurgeryTab() {
         body: formData,
       });
 
+      // Read response body for detailed error info
+      let responseBody: string;
+      try {
+        responseBody = await response.text();
+      } catch {
+        responseBody = '(não foi possível ler a resposta)';
+      }
+
       if (!response.ok) {
-        throw new Error('Falha ao processar a imagem no n8n');
+        console.error('[upload] Proxy error:', response.status, responseBody);
+        // Try to parse JSON error from our proxy
+        let detail = responseBody;
+        try {
+          const parsed = JSON.parse(responseBody);
+          detail = parsed.detail || parsed.error || responseBody;
+        } catch { /* use raw text */ }
+        throw new Error(`Status ${response.status}: ${detail}`);
       }
 
       alert('Comprovante enviado com sucesso! O sistema atualizará a lista em alguns segundos.');
