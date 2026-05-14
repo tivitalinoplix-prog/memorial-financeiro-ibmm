@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import FormData from 'form-data';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -31,8 +30,7 @@ export async function GET() {
 
 /**
  * POST /api/upload-comprovante
- * Proxy to forward the comprovante file to the n8n webhook,
- * using form-data library for proper multipart/form-data encoding.
+ * Proxy to forward the comprovante file to the n8n webhook.
  */
 export async function POST(request: Request) {
   try {
@@ -52,27 +50,19 @@ export async function POST(request: Request) {
 
     console.log('[upload-proxy] Received file:', { fileName, fileType, fileSize });
 
-    // Read file as Buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // Use form-data library to build multipart/form-data correctly
-    const form = new FormData();
-    form.append('comprovante', buffer, {
-      filename: fileName,
-      contentType: fileType,
-    });
+    // Create new FormData to forward to n8n
+    const outgoingFormData = new FormData();
+    outgoingFormData.append('comprovante', file, fileName);
 
     console.log('[upload-proxy] Forwarding to n8n:', {
       webhookUrl: N8N_WEBHOOK_URL,
-      fileSize: buffer.length,
+      fileSize,
     });
 
     // Forward to n8n webhook
     const n8nResponse = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
-      headers: form.getHeaders(),
-      body: form.getBuffer(),
+      body: outgoingFormData,
     });
 
     const responseText = await n8nResponse.text();
