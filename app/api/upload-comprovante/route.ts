@@ -5,7 +5,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     
     // N8N webhook URL from the original component
-    const n8nWebhookUrl = 'https://vitalino.app.n8n.cloud/webhook/comprovantes-2026';
+    const n8nWebhookUrl = 'https://vitalino.app.n8n.cloud/webhook/comprovantes-2026'
     
     // Forward the request to n8n
     const response = await fetch(n8nWebhookUrl, {
