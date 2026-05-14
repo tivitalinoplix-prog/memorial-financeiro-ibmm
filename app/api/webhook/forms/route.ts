@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       date: formatDate(date),
       description: description || 'Inserido via Forms',
       amount: parsedAmount || 0,
-      type: type === 'Entrada' ? 'entrada' : 'saida',
+      transaction_type: type === 'Entrada' ? 'entrada' : 'saida',
       category: category || 'Outros',
       account: account || 'CAIXA_TESOURARIA',
       status: status || 'completed',

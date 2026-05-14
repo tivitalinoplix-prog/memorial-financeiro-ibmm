@@ -41,6 +41,7 @@ export function SurgeryTab() {
 
   // Busca inicial das transações (Mesa de Cirurgia = status "pending")
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
   }, []);
 
