@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import FormData from 'form-data';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -11,8 +12,6 @@ const N8N_WEBHOOK_URL = 'https://vitalino.app.n8n.cloud/webhook/comprovantes-202
  */
 export async function GET() {
   try {
-    // n8n webhooks typically only accept POST, so a GET may return 404 or 405.
-    // We use it just to test DNS resolution and network connectivity.
     const start = Date.now();
     const res = await fetch(N8N_WEBHOOK_URL, { method: 'GET' });
     const elapsed = Date.now() - start;
@@ -33,7 +32,7 @@ export async function GET() {
 /**
  * POST /api/upload-comprovante
  * Proxy to forward the comprovante file to the n8n webhook,
- * bypassing browser CORS restrictions.
+ * using form-data library for proper multipart/form-data encoding.
  */
 export async function POST(request: Request) {
   try {
@@ -53,41 +52,27 @@ export async function POST(request: Request) {
 
     console.log('[upload-proxy] Received file:', { fileName, fileType, fileSize });
 
-    // Read file as ArrayBuffer for a clean re-send
+    // Read file as Buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Build multipart/form-data manually using the Node.js-native FormData
-    // This avoids issues with the web FormData API in serverless environments
-    const boundary = '----n8nUploadBoundary' + Date.now();
-    const CRLF = '\r\n';
-
-    const header = [
-      `--${boundary}`,
-      `Content-Disposition: form-data; name="comprovante"; filename="${fileName}"`,
-      `Content-Type: ${fileType}`,
-      '',
-      '',
-    ].join(CRLF);
-
-    const footer = CRLF + `--${boundary}--` + CRLF;
-
-    const headerBuffer = Buffer.from(header, 'utf-8');
-    const footerBuffer = Buffer.from(footer, 'utf-8');
-    const body = Buffer.concat([headerBuffer, buffer, footerBuffer]);
+    // Use form-data library to build multipart/form-data correctly
+    const form = new FormData();
+    form.append('comprovante', buffer, {
+      filename: fileName,
+      contentType: fileType,
+    });
 
     console.log('[upload-proxy] Forwarding to n8n:', {
       webhookUrl: N8N_WEBHOOK_URL,
-      bodySize: body.length,
-      boundary,
+      fileSize: buffer.length,
     });
 
+    // Forward to n8n webhook
     const n8nResponse = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': `multipart/form-data; boundary=${boundary}`,
-      },
-      body: body,
+      headers: form.getHeaders(),
+      body: form.getBuffer(),
     });
 
     const responseText = await n8nResponse.text();
@@ -116,11 +101,12 @@ export async function POST(request: Request) {
     } catch {
       return NextResponse.json({ success: true, raw: responseText });
     }
-
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error);
     const stack = error instanceof Error ? error.stack : undefined;
+
     console.error('[upload-proxy] Fatal error:', msg, stack);
+
     return NextResponse.json(
       { error: 'Erro interno no proxy de upload', detail: msg },
       { status: 500 }
