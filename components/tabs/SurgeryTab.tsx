@@ -22,7 +22,7 @@ export function SurgeryTab() {
   const [selectedTx, setSelectedTx] = useState<TransactionRow | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [filterSource, setFilterSource] = useState<string>('');
-  const [filterStatus, setFilterStatus] = useState<'pending' | 'confirmado'>('pending');
+  const [filterStatus, setFilterStatus] = useState<'pendente' | 'confirmado'>('pendente');
   const [page, setPage] = useState(1);
   const ITEMS_PER_PAGE = 50;
 
@@ -44,7 +44,7 @@ export function SurgeryTab() {
     }
   };
 
-  // Busca inicial das transações (Mesa de Cirurgia = status "pending")
+  // Busca inicial das transações (Mesa de Cirurgia = status "pendente")
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
@@ -211,8 +211,8 @@ export function SurgeryTab() {
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex bg-surface border border-border p-0.5 rounded-sm">
             <button 
-              onClick={() => { setFilterStatus('pending'); setPage(1); }}
-              className={cn("px-3 py-1 text-[10px] uppercase font-bold tracking-widest transition-colors", filterStatus === 'pending' ? 'bg-primary text-white' : 'text-text-ghost hover:text-text-primary')}
+              onClick={() => { setFilterStatus('pendente'); setPage(1); }}
+              className={cn("px-3 py-1 text-[10px] uppercase font-bold tracking-widest transition-colors", filterStatus === 'pendente' ? 'bg-primary text-white' : 'text-text-ghost hover:text-text-primary')}
             >Pendentes</button>
             <button 
               onClick={() => { setFilterStatus('confirmado'); setPage(1); }}
@@ -317,7 +317,7 @@ export function SurgeryTab() {
                         {formatCurrency(t.amount || 0)}
                       </td>
                       <td className="text-center">
-                        {filterStatus === 'pending' ? (
+                        {filterStatus === 'pendente' ? (
                           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[9px] font-bold tracking-widest uppercase rounded-sm border border-amber-500/20">
                             Revisar
                           </span>
@@ -347,7 +347,7 @@ export function SurgeryTab() {
                     </div>
                     <div className="flex justify-between items-center text-[10px] text-text-muted">
                       <span className="font-mono">{t.date}</span>
-                      {filterStatus === 'pending' ? (
+                      {filterStatus === 'pendente' ? (
                         <span className="text-amber-500">Revisar</span>
                       ) : (
                         <span className="text-emerald-500">Aprovado</span>
