@@ -12,7 +12,10 @@
       "name": "Webhook (Entrada WPP)",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [250, 300],
+      "position": [
+        250,
+        300
+      ],
       "webhookId": "comprovantes-2026-trigger"
     },
     {
@@ -27,17 +30,23 @@
       "name": "Google Gemini",
       "type": "n8n-nodes-base.googleGemini",
       "typeVersion": 1,
-      "position": [450, 300]
+      "position": [
+        450,
+        300
+      ]
     },
     {
       "parameters": {
-        "jsCode": "try {\n  let data = $input.item.json.text || $input.item.json;\n  if (typeof data === 'string' && data.startsWith('```json')) {\n    data = data.replace(/```json/g, '').replace(/```/g, '');\n  }\n  const parsed = typeof data === 'string' ? JSON.parse(data) : data;\n\n  // 1. Converter data DD/MM/YYYY para YYYY-MM-DD (Requisito do Supabase)\n  if (parsed.date && parsed.date.includes('/')) {\n    const parts = parsed.date.split('/');\n    if (parts.length === 3) {\n      parsed.date = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;\n    }\n  }\n\n  // 2. Garantir amount negativo para saídas/débitos (Regra do Banco)\n  let val = parsed.amount;\n  if (typeof val === 'string') {\n    val = parseFloat(val.replace(',', '.'));\n  }\n  parsed.amount = val ? -Math.abs(val) : 0;\n\n  // 3. Mapear para a coluna correta 'entry_type' do Supabase\n  parsed.entry_type = 'débito';\n\n  // 4. Mapear status correto\n  parsed.status = 'pendente';\n\n  // 5. Definir o source_type\n  parsed.source_type = 'ocr';\n\n  return parsed;\n} catch(e) {\n  return {\n    date: new Date().toISOString().split('T')[0],\n    description: 'Erro de Leitura OCR',\n    amount: 0,\n    entry_type: 'débito',\n    account: 'CAIXA_TESOURARIA',\n    status: 'pendente',\n    source_type: 'ocr'\n  };\n}"
+        "jsCode": "try {\n  let data = $input.item.json.text || $input.item.json;\n  if (typeof data === 'string' && data.startsWith('```json')) {\n    data = data.replace(/```json/g, '').replace(/```/g, '');\n  }\n  const parsed = typeof data === 'string' ? JSON.parse(data) : data;\n\n  // 1. Converter data DD/MM/YYYY para YYYY-MM-DD (Requisito do Supabase)\n  if (parsed.date && parsed.date.includes('/')) {\n    const parts = parsed.date.split('/');\n    if (parts.length === 3) {\n      parsed.date = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;\n    }\n  }\n\n  // 2. Garantir amount negativo para saídas/débitos (Regra do Banco)\n  let val = parsed.amount;\n  if (typeof val === 'string') {\n    val = parseFloat(val.replace(',', '.'));\n  }\n  parsed.amount = val ? -Math.abs(val) : 0;\n\n  // 3. Mapear para a coluna correta 'entry_type' do Supabase\n  parsed.type = 'saida';\n\n  // 4. Mapear status correto\n  parsed.status = 'pendente';\n\n  // 5. Definir o source_type\n  parsed.notes = 'source: ocr';\n\n  return parsed;\n} catch(e) {\n  return {\n    date: new Date().toISOString().split('T')[0],\n    description: 'Erro de Leitura OCR',\n    amount: 0,\n    type: 'saida',\n    account: 'CAIXA_TESOURARIA',\n    status: 'pendente',\n    notes: 'source: ocr'\n  };\n}"
       },
       "id": "c138b002-ff7b-402a-a9e9-d7b425b0337c",
       "name": "Parser JSON",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [650, 300]
+      "position": [
+        650,
+        300
+      ]
     },
     {
       "parameters": {
@@ -80,8 +89,8 @@
               "value": "={{ $json.amount }}"
             },
             {
-              "name": "entry_type",
-              "value": "={{ $json.entry_type }}"
+              "name": "type",
+              "value": "={{ $json.type }}"
             },
             {
               "name": "category",
@@ -96,8 +105,8 @@
               "value": "={{ $json.status }}"
             },
             {
-              "name": "source_type",
-              "value": "={{ $json.source_type }}"
+              "name": "notes",
+              "value": "={{ $json.notes }}"
             }
           ]
         },
@@ -107,7 +116,10 @@
       "name": "Supabase via HTTP",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [850, 300]
+      "position": [
+        850,
+        300
+      ]
     }
   ],
   "pinData": {},
