@@ -2,9 +2,9 @@ import { createClient } from '@supabase/supabase-js';
 
 // Supabase client — funciona em browser e server
 // Se as vars não estiverem configuradas, retorna null e o app usa fallback JSON
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_DB_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_DB_ANON_KEY;
+const supabaseServiceKey = process.env.DB_SERVICE_ROLE_KEY;
 
 // Client para uso no browser (anon key)
 export const supabase =
