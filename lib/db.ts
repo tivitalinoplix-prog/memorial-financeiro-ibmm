@@ -39,6 +39,7 @@ export function jsonToTransactionRow(t: UnifiedTransaction): any {
     subcategory: t.operation_type ?? null,
     status: 'confirmado',
     category: t.category || 'Outros', // Fallback for null constraint
+    reference: null,
     notes: `source: ${t.document_source}, conf: ${t.confidence}`
   };
 }
@@ -119,6 +120,26 @@ export async function insertTransaction(
     .select()
     .single();
   if (error) throw new Error(`[db] Insert error: ${error.message}`);
+  return data as TransactionRow;
+}
+
+/**
+ * Atualiza uma transação existente no Supabase.
+ */
+export async function updateTransaction(
+  id: string,
+  updates: Partial<Omit<TransactionRow, 'id' | 'created_at'>>
+): Promise<TransactionRow> {
+  if (!isSupabaseConfigured || !supabase) {
+    throw new Error('Supabase não configurado. Não é possível atualizar.');
+  }
+  const { data, error } = await supabase
+    .from('transactions')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw new Error(`[db] Update error: ${error.message}`);
   return data as TransactionRow;
 }
 

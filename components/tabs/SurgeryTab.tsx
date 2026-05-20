@@ -3,11 +3,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import imageCompression from 'browser-image-compression';
 import { cn } from '@/lib/utils';
-import { getTransactions, TransactionRow } from '@/lib/db';
+import { getTransactions, TransactionRow, updateTransaction } from '@/lib/db';
 import { formatCurrency, formatCurrencyShort } from '@/lib/mock-data';
 import { StatusBadge, StatusType } from '@/components/StatusBadge';
 import { Search, ChevronDown, ChevronUp, ArrowUpDown, Eye, Loader2, CheckCircle2, Sparkles, Camera, ImagePlus, FolderOpen, X } from 'lucide-react';
 import { ExportToolbar } from '@/components/ExportToolbar';
+import { toast } from 'sonner';
 
 type SortField = 'date' | 'amount' | 'supplier' | 'category';
 type SortDir = 'asc' | 'desc';
@@ -21,18 +22,20 @@ export function SurgeryTab() {
   const [selectedTx, setSelectedTx] = useState<TransactionRow | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('');
   const [filterSource, setFilterSource] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<'pending' | 'confirmado'>('pending');
   const [page, setPage] = useState(1);
   const ITEMS_PER_PAGE = 50;
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const cameraInputRef = React.useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [showSourceMenu, setShowSourceMenu] = useState(false);
 
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const data = await getTransactions({ status: 'pending' });
+      const data = await getTransactions({ status: filterStatus });
       setTransactions(data);
     } catch (err) {
       console.error('Erro ao buscar Mesa de Cirurgia:', err);
@@ -45,7 +48,7 @@ export function SurgeryTab() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
-  }, []);
+  }, [filterStatus]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -152,7 +155,9 @@ export function SurgeryTab() {
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   const mapStatus = (t: TransactionRow): StatusType => {
-    // Como a Mesa de Cirurgia puxa 'pending', tudo aqui precisa de revisão
+    if (t.status === 'confirmado') return 'regularizado';
+    if (t.status === 'rejeitado') return 'falha';
+    if (t.status === 'integrado') return 'integrado';
     return 'pendente';
   };
 
@@ -204,6 +209,16 @@ export function SurgeryTab() {
         </div>
         
         <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex bg-surface border border-border p-0.5 rounded-sm">
+            <button 
+              onClick={() => { setFilterStatus('pending'); setPage(1); }}
+              className={cn("px-3 py-1 text-[10px] uppercase font-bold tracking-widest transition-colors", filterStatus === 'pending' ? 'bg-primary text-white' : 'text-text-ghost hover:text-text-primary')}
+            >Pendentes</button>
+            <button 
+              onClick={() => { setFilterStatus('confirmado'); setPage(1); }}
+              className={cn("px-3 py-1 text-[10px] uppercase font-bold tracking-widest transition-colors", filterStatus === 'confirmado' ? 'bg-primary text-white' : 'text-text-ghost hover:text-text-primary')}
+            >Aprovados</button>
+          </div>
           <select value={filterCategory} onChange={(e) => { setFilterCategory(e.target.value); setPage(1); }} className={selectClass}>
             <option value="">Todas Categorias</option>
             {categories.map(c => <option key={c} value={c}>{c}</option>)}
@@ -259,8 +274,8 @@ export function SurgeryTab() {
           ) : filtered.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-text-ghost gap-3 p-6 text-center">
               <CheckCircle2 className="w-8 h-8 text-emerald-500/50" />
-              <div className="text-[12px] font-medium text-text-secondary">Mesa de Cirurgia Limpa!</div>
-              <p className="text-[10px] max-w-xs">Nenhum comprovante pendente no Supabase. Os fluxos da IA foram aprovados ou estão vazios.</p>
+              <div className="text-[12px] font-medium text-text-secondary">Nenhum registro encontrado!</div>
+              <p className="text-[10px] max-w-xs">A lista para este status está vazia.</p>
             </div>
           ) : (
             <div className="overflow-auto flex-1">
@@ -281,7 +296,7 @@ export function SurgeryTab() {
                     <th className="text-right cursor-pointer hover:text-primary transition-colors" onClick={() => toggleSort('amount')}>
                       Valor {renderSortIcon('amount')}
                     </th>
-                    <th className="text-center">Ação Requerida</th>
+                    <th className="text-center">Status</th>
                     <th className="w-10"></th>
                   </tr>
                 </thead>
@@ -302,9 +317,13 @@ export function SurgeryTab() {
                         {formatCurrency(t.amount || 0)}
                       </td>
                       <td className="text-center">
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[9px] font-bold tracking-widest uppercase rounded-sm border border-amber-500/20">
-                          Revisar
-                        </span>
+                        {filterStatus === 'pending' ? (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[9px] font-bold tracking-widest uppercase rounded-sm border border-amber-500/20">
+                            Revisar
+                          </span>
+                        ) : (
+                          <StatusBadge status={mapStatus(t)} />
+                        )}
                       </td>
                       <td>
                         <button className="p-1 text-text-ghost hover:text-primary opacity-0 group-hover:opacity-100 transition-all">
@@ -328,7 +347,11 @@ export function SurgeryTab() {
                     </div>
                     <div className="flex justify-between items-center text-[10px] text-text-muted">
                       <span className="font-mono">{t.date}</span>
-                      <span className="text-amber-500">Revisar</span>
+                      {filterStatus === 'pending' ? (
+                        <span className="text-amber-500">Revisar</span>
+                      ) : (
+                        <span className="text-emerald-500">Aprovado</span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -379,30 +402,61 @@ export function SurgeryTab() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-4 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 120px)' }}>
+            <form key={selectedTx.id} className="p-4 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 120px)' }} onSubmit={async (e) => {
+              e.preventDefault();
+              setIsSaving(true);
+              try {
+                const fd = new FormData(e.currentTarget);
+                let rawAmount = fd.get('amount') as string;
+                // remove R$, spaces, dots. Replace comma with dot
+                rawAmount = rawAmount.replace(/[R$\s\.]/g, '').replace(',', '.');
+                const numericAmount = -Math.abs(parseFloat(rawAmount) || 0);
+
+                await updateTransaction(selectedTx.id, {
+                  account: fd.get('account') as string,
+                  payment_method: fd.get('payment_method') as string,
+                  cost_center: fd.get('cost_center') as string,
+                  supplier: fd.get('supplier') as string,
+                  reference: fd.get('reference') as string,
+                  description: fd.get('description') as string,
+                  date: fd.get('date') as string,
+                  amount: numericAmount,
+                  type: 'saida',
+                  status: 'confirmado',
+                });
+                toast.success('Aprovado e registrado no banco com sucesso!');
+                loadData();
+                setSelectedTx(null);
+              } catch (err) {
+                toast.error(`Erro ao aprovar: ${err}`);
+              } finally {
+                setIsSaving(false);
+              }
+            }}>
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-surface border border-border p-3">
                   <div className="text-[9px] text-rose-500 uppercase tracking-[0.08em] font-bold mb-1">* Caixa</div>
-                  <input type="text" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1" defaultValue="Caixa Geral" />
+                  <input name="caixa_mock" type="text" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1" defaultValue="CAIXA TESOURARIA" disabled />
                 </div>
                 <div className="bg-surface border border-border p-3">
                   <div className="text-[9px] text-rose-500 uppercase tracking-[0.08em] font-bold mb-1">* Conta</div>
-                  <input type="text" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1" defaultValue={selectedTx.account || ''} />
+                  <input name="account" type="text" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1" defaultValue={selectedTx.account || ''} required />
                 </div>
               </div>
               
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-surface border border-border p-3">
                   <div className="text-[9px] text-text-ghost uppercase tracking-[0.08em] font-bold mb-1">Número</div>
-                  <input type="text" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1" placeholder="Opcional" />
+                  <input name="reference" type="text" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1" defaultValue={selectedTx.reference || selectedTx.external_id || ''} />
                 </div>
                 <div className="bg-surface border border-border p-3">
                   <div className="text-[9px] text-rose-500 uppercase tracking-[0.08em] font-bold mb-1">* Operação</div>
-                  <select className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1">
+                  <select name="payment_method" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1" defaultValue={selectedTx.payment_method?.toLowerCase() || 'pix'}>
                     <option value="debito">Débito em Conta</option>
                     <option value="credito">Crédito</option>
                     <option value="dinheiro">Dinheiro</option>
                     <option value="pix">PIX</option>
+                    <option value="boleto">Boleto</option>
                   </select>
                 </div>
               </div>
@@ -410,43 +464,45 @@ export function SurgeryTab() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-surface border border-border p-3">
                   <div className="text-[9px] text-text-ghost uppercase tracking-[0.08em] font-bold mb-1">Centro de Custo</div>
-                  <input type="text" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1" defaultValue={selectedTx.category || ''} />
+                  <input name="cost_center" type="text" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1" defaultValue={selectedTx.cost_center || selectedTx.category || ''} />
                 </div>
                 <div className="bg-surface border border-border p-3">
                   <div className="text-[9px] text-text-ghost uppercase tracking-[0.08em] font-bold mb-1">Fornecedor</div>
-                  <input type="text" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1" defaultValue="" />
+                  <input name="supplier" type="text" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1" defaultValue={selectedTx.supplier || ''} />
                 </div>
               </div>
 
               <div className="bg-surface border border-border p-3">
-                <div className="text-[9px] text-text-ghost uppercase tracking-[0.08em] font-bold mb-1">Documento / Descrição</div>
-                <textarea className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1 resize-none h-16" defaultValue={selectedTx.description || ''}></textarea>
+                <div className="text-[9px] text-text-ghost uppercase tracking-[0.08em] font-bold mb-1">Descrição</div>
+                <textarea name="description" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1 resize-none h-16" defaultValue={selectedTx.description || ''}></textarea>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-surface border border-border p-3">
                   <div className="text-[9px] text-rose-500 uppercase tracking-[0.08em] font-bold mb-1">* Vencimento</div>
-                  <input type="date" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1" defaultValue={selectedTx.date} />
+                  <input name="date" type="date" className="w-full bg-transparent text-[12px] text-text-primary border-b border-border focus:border-primary outline-none py-1" defaultValue={selectedTx.date} required />
                 </div>
                 <div className="bg-surface border border-border p-3">
                   <div className="text-[9px] text-rose-500 uppercase tracking-[0.08em] font-bold mb-1">* Valor</div>
-                  <input type="text" className="w-full bg-transparent text-[14px] font-bold font-mono text-rose-400 border-b border-border focus:border-primary outline-none py-1" defaultValue={formatCurrency(Math.abs(selectedTx.amount || 0))} />
+                  <input name="amount" type="text" className="w-full bg-transparent text-[14px] font-bold font-mono text-rose-400 border-b border-border focus:border-primary outline-none py-1" defaultValue={formatCurrency(Math.abs(selectedTx.amount || 0))} required />
                 </div>
               </div>
 
-              {/* Botão de Aprovação Mockado para a próxima fase */}
+              <div className="flex items-center gap-2 mt-2 px-1">
+                <input type="checkbox" id="recorrencia" className="w-4 h-4 accent-primary rounded border-border" />
+                <label htmlFor="recorrencia" className="text-[11px] text-text-primary font-medium">Recorrência</label>
+              </div>
+
               <div className="mt-6 pt-4 border-t border-border flex gap-3">
-                <button className="flex-1 bg-primary hover:bg-primary-dark text-white font-bold py-3 text-[11px] transition-colors tracking-widest uppercase flex items-center justify-center gap-2" onClick={() => {
-                  alert('Aprovado! Na próxima fase o Robô RPA enviará isto ao Eclésia.');
-                  setSelectedTx(null);
-                }}>
-                  <CheckCircle2 className="w-4 h-4" /> Registrar no Comunion
+                <button type="submit" disabled={isSaving} className="flex-1 bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-bold py-3 text-[11px] transition-colors tracking-widest uppercase flex items-center justify-center gap-2">
+                  {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} 
+                  {isSaving ? 'Salvando...' : 'Salvar (Comunion)'}
                 </button>
-                <button className="flex-1 bg-surface border border-border text-text-primary hover:bg-border font-bold py-3 text-[11px] transition-colors tracking-widest uppercase" onClick={() => setSelectedTx(null)}>
+                <button type="button" disabled={isSaving} className="flex-1 bg-surface border border-border text-text-primary hover:bg-border font-bold py-3 text-[11px] transition-colors tracking-widest uppercase" onClick={() => setSelectedTx(null)}>
                   Cancelar
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         )}
       </div>

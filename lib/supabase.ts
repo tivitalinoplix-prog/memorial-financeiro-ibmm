@@ -26,6 +26,7 @@ export const isSupabaseConfigured = !!supabaseUrl && !!supabaseAnonKey;
 // Tipos das tabelas
 export type TransactionRow = {
   id: string;
+  external_id: string | null;
   date: string;         // ISO date YYYY-MM-DD
   description: string | null;
   amount: number;       // positivo = crédito, negativo = débito
@@ -35,10 +36,11 @@ export type TransactionRow = {
   document_source: string | null;
   cost_center: string | null;
   payment_method: string | null;
+  reference: string | null;
   account: string | null;
   type: 'entrada' | 'saida' | null;
   operation_type: string | null;
-  status: 'pendente' | 'confirmado' | 'rejeitado';
+  status: 'pendente' | 'confirmado' | 'rejeitado' | 'integrado';
   confidence: number | null;
   notes: string | null;
   created_at: string;
