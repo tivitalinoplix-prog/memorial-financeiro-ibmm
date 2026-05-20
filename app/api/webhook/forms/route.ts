@@ -42,22 +42,24 @@ export async function POST(request: Request) {
     const parsedAmount = typeof amount === 'string' ? parseFloat(amount.replace(',', '.')) : amount;
     
     const row: Omit<TransactionRow, 'id' | 'created_at'> = {
+      external_id: external_id || null,
+      reference: null,
       date: formatDate(date),
       description: description || 'Inserido via Forms',
       amount: parsedAmount || 0,
       type: type === 'Entrada' ? 'entrada' : 'saida',
       category: category || 'Outros',
       account: account || 'CAIXA_TESOURARIA',
-      status: status === 'pending' ? 'pendente' : 'confirmado',
-      notes: 'source: manual',
+      status: 'pendente',
+      notes: 'source: forms',
       supplier: null,
       cost_center: null,
       payment_method: null,
-      operation_type: null,
-      confidence: null,
+      confidence: 1.0,
       cnpj: null,
-      document_source: null,
-      raw_data: { external_id: external_id || `forms-${Date.now()}` }
+      document_source: 'forms',
+      operation_type: null,
+      raw_data: body
     };
 
     // Insere no banco com privilégios admin
