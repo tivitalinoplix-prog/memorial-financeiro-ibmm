@@ -1,0 +1,187 @@
+{
+  "name": "Passivo Saídas 2026 (Blindado e Corrigido)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "comprovantes-2026",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "96fb9700-bddb-4c6a-8e94-374a0681c25c",
+      "name": "Webhook (Entrada WPP)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        208,
+        112
+      ],
+      "webhookId": "comprovantes-2026-trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  let data = $input.item.json.text || $input.item.json;\n  if (typeof data === 'string' && data.startsWith('```json')) {\n    data = data.replace(/```json/g, '').replace(/```/g, '');\n  }\n  const parsed = typeof data === 'string' ? JSON.parse(data) : data;\n\n  // 1. Converter data DD/MM/YYYY para YYYY-MM-DD (Requisito do Supabase)\n  if (parsed.date && parsed.date.includes('/')) {\n    const parts = parsed.date.split('/');\n    if (parts.length === 3) {\n      parsed.date = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;\n    }\n  }\n\n  // 2. Garantir amount negativo para saídas/débitos (Regra do Banco)\n  let val = parsed.amount;\n  if (typeof val === 'string') {\n    val = parseFloat(val.replace(',', '.'));\n  }\n  parsed.amount = val ? -Math.abs(val) : 0;\n\n  // 3. Mapear para a coluna correta 'entry_type' do Supabase\n  parsed.type = 'saida';\n\n  // 4. Mapear status correto\n  parsed.status = 'pendente';\n\n  // 5. Definir o source_type\n  parsed.notes = 'source: ocr';\n\n  return parsed;\n} catch(e) {\n  return {\n    date: new Date().toISOString().split('T')[0],\n    description: 'Erro de Leitura OCR',\n    amount: 0,\n    type: 'saida',\n    account: 'CAIXA_TESOURARIA',\n    status: 'pendente',\n    notes: 'source: ocr'\n  };\n}"
+      },
+      "id": "88a92090-c1b6-4629-bc80-f6c98b47d8e1",
+      "name": "Parser JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://svhvgvymmhoktvnmwggm.supabase.co/rest/v1/transactions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2aHZndnltbWhva3R2bm13Z2dtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODU0NzQyOCwiZXhwIjoyMDk0MTIzNDI4fQ.Nn6DedVCbIZOxQeqlM84h4Sy2frQ2Ooyk53KRN16bMU"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2aHZndnltbWhva3R2bm13Z2dtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODU0NzQyOCwiZXhwIjoyMDk0MTIzNDI4fQ.Nn6DedVCbIZOxQeqlM84h4Sy2frQ2Ooyk53KRN16bMU"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "date",
+              "value": "={{ $json.date }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.description }}"
+            },
+            {
+              "name": "amount",
+              "value": "={{ $json.amount }}"
+            },
+            {
+              "name": "type",
+              "value": "={{ $json.type }}"
+            },
+            {
+              "name": "category",
+              "value": "={{ $json.category }}"
+            },
+            {
+              "name": "account",
+              "value": "={{ $json.account }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $json.status }}"
+            },
+            {
+              "name": "notes",
+              "value": "={{ $json.notes }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "46363154-a9ca-4b2a-add1-3162f8d4114a",
+      "name": "Supabase via HTTP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        816,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Analise este comprovante bancário e extraia as seguintes informações em formato JSON puro, sem markdown ou blocos de código:\n{\n  \"date\": \"data da transação no formato YYYY-MM-DD\",\n  \"description\": \"descrição ou histórico da operação\",\n  \"amount\": valor numérico da transação,\n  \"category\": \"categoria inferida (ex: Alimentação, Transporte, etc)\",\n  \"payee\": \"beneficiário ou destinatário\"\n}",
+        "inputType": "binary",
+        "binaryPropertyName": "comprovante",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        416,
+        112
+      ],
+      "id": "ad062ad9-be6c-45bf-b4fc-b3c42c3dd3c7",
+      "name": "Analyze an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2kZ2jN4jMR8IrAXi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Parser JSON": {
+      "main": [
+        [
+          {
+            "node": "Supabase via HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook (Entrada WPP)": {
+      "main": [
+        [
+          {
+            "node": "Analyze an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image": {
+      "main": [
+        [
+          {
+            "node": "Parser JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "190468cc-9b33-427a-a8e8-ed15cf69a5d8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "738b1ce8541abcf030e87c23c7881382f1f52d5b270f668c1b4a4e9ec9e74891"
+  },
+  "id": "Jocu1c8BpxYlBnMV",
+  "tags": []
+}

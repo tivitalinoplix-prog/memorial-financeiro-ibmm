@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { DEMO_DATA, formatCurrency } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
-import { Search, Check, X, Eye, Upload, FileText, Loader2, Brain } from 'lucide-react';
+import { Search, Check, X, Eye, Upload, FileText, Loader2, Brain, CheckSquare } from 'lucide-react';
 import { StatusBadge, StatusType } from '@/components/StatusBadge';
 import { DetailDrawer } from '@/components/DetailDrawer';
 import { ExportToolbar } from '@/components/ExportToolbar';
@@ -17,6 +17,30 @@ export function InboxTab() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [items, setItems] = useState(DEMO_DATA.inboxItems);
   const [isNoteReaderOpen, setIsNoteReaderOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+  const toggleSelect = (id: number, checked: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(filtered.filter(i => ['pendente', 'revisao', 'erro'].includes(i.status)).map(i => i.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleBatchApprove = () => {
+    setItems(prev => prev.map(item => selectedIds.has(item.id) ? { ...item, status: 'aprovado' } : item));
+    toast.success(`${selectedIds.size} notas aprovadas em lote com sucesso`);
+    setSelectedIds(new Set());
+  };
 
   const handleNoteConfirm = (data: any) => {
     const newItem = {
@@ -170,6 +194,14 @@ export function InboxTab() {
           <table className="w-full text-left whitespace-nowrap hidden md:table brutal-table">
             <thead className="bg-background sticky top-0 z-10">
               <tr>
+                <th className="w-10">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 accent-primary rounded border-border"
+                    onChange={(e) => toggleSelectAll(e.target.checked)}
+                    checked={filtered.length > 0 && selectedIds.size === filtered.filter(i => ['pendente', 'revisao', 'erro'].includes(i.status)).length && selectedIds.size > 0}
+                  />
+                </th>
                 <th className="w-10"></th>
                 <th>Fornecedor / CNPJ</th>
                 <th>Data</th>
@@ -183,9 +215,19 @@ export function InboxTab() {
               {filtered.map(it => (
                 <tr 
                   key={it.id} 
-                  className="hover:bg-primary/[0.03] group cursor-pointer transition-colors border-b border-border/50"
+                  className={cn("hover:bg-primary/[0.03] group cursor-pointer transition-colors border-b border-border/50", selectedIds.has(it.id) && "bg-primary/[0.05]")}
                   onClick={() => setSelectedDoc(it)}
                 >
+                  <td className="w-10" onClick={(e) => e.stopPropagation()}>
+                    {['pendente', 'revisao', 'erro'].includes(it.status) && (
+                      <input 
+                        type="checkbox" 
+                        className="w-4 h-4 accent-primary rounded border-border"
+                        checked={selectedIds.has(it.id)}
+                        onChange={(e) => toggleSelect(it.id, e.target.checked)}
+                      />
+                    )}
+                  </td>
                   <td className="w-10">
                     <div className="w-7 h-7 bg-surface border border-border flex items-center justify-center text-[9px] font-bold text-text-muted">
                       {getInitials(it.sup)}
@@ -244,6 +286,16 @@ export function InboxTab() {
               <div key={it.id} className="p-4 hover:bg-surface transition-colors" onClick={() => setSelectedDoc(it)}>
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
+                    {['pendente', 'revisao', 'erro'].includes(it.status) && (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <input 
+                          type="checkbox" 
+                          className="w-4 h-4 accent-primary rounded border-border"
+                          checked={selectedIds.has(it.id)}
+                          onChange={(e) => toggleSelect(it.id, e.target.checked)}
+                        />
+                      </div>
+                    )}
                     <div className="w-8 h-8 bg-surface border border-border flex items-center justify-center text-[10px] font-bold text-text-muted shrink-0">
                       {getInitials(it.sup)}
                     </div>
@@ -338,6 +390,24 @@ export function InboxTab() {
         onClose={() => setIsNoteReaderOpen(false)}
         onConfirm={handleNoteConfirm}
       />
+
+      {/* Floating Batch Actions */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 bg-surface border border-primary shadow-2xl p-4 rounded-full animate-slide-up">
+          <div className="flex items-center gap-2 text-text-primary">
+            <CheckSquare className="w-5 h-5 text-primary" />
+            <span className="text-[13px] font-bold">{selectedIds.size} selecionados</span>
+          </div>
+          <div className="w-px h-6 bg-border mx-2"></div>
+          <button 
+            onClick={handleBatchApprove}
+            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-full text-[12px] font-bold uppercase tracking-widest transition-colors"
+          >
+            <Check className="w-4 h-4" />
+            Aprovar Lote
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,8 +9,8 @@ import { formatCurrencyShort, formatNumber, formatCurrency } from '@/lib/mock-da
 import { cn } from '@/lib/utils';
 import { KpiCard } from '@/components/KpiCard';
 import { ExportToolbar } from '@/components/ExportToolbar';
-import { AlertTriangle, TrendingUp, GitMerge, Activity, Zap, BarChart3 } from 'lucide-react';
-import { transactions } from '@/lib/data-importer';
+import { AlertTriangle, TrendingUp, GitMerge, Activity, Zap, BarChart3, Loader2 } from 'lucide-react';
+import { getTransactions, TransactionRow } from '@/lib/db';
 
 /* ── Tooltip Brutalista v5 ── */
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -43,6 +43,23 @@ const PILLARS_DATA = [
 ];
 
 export function DashboardTab() {
+  const [transactionsData, setTransactionsData] = React.useState<TransactionRow[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchDb() {
+      try {
+        const data = await getTransactions();
+        setTransactionsData(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDb();
+  }, []);
+
   const metrics = useMemo(() => {
     const monthlyMap: Record<string, { income: number, expense: number, balance: number, count: number }> = {};
     const categoriesMap: Record<string, number> = {};
@@ -51,26 +68,31 @@ export function DashboardTab() {
     let totalIncome = 0;
     let totalExpense = 0;
 
-    transactions.forEach(t => {
-      if (!monthlyMap[t.month_label]) monthlyMap[t.month_label] = { income: 0, expense: 0, balance: 0, count: 0 };
-      if (!sourcesMap[t.document_source]) sourcesMap[t.document_source] = 0;
-      if (!categoriesMap[t.category]) categoriesMap[t.category] = 0;
+    transactionsData.forEach(t => {
+      // Create a sortable month label (e.g. "2026-05")
+      const monthLabel = t.date ? t.date.substring(0, 7) : 'Unknown';
+      const source = (t as any).notes || t.account || 'Unknown';
+      const category = t.category || 'Outros';
+
+      if (!monthlyMap[monthLabel]) monthlyMap[monthLabel] = { income: 0, expense: 0, balance: 0, count: 0 };
+      if (!sourcesMap[source]) sourcesMap[source] = 0;
+      if (!categoriesMap[category]) categoriesMap[category] = 0;
       
-      const v = t.amount;
-      const absV = Math.abs(t.amount);
+      const v = t.amount || 0;
+      const absV = Math.abs(v);
       
       if (v > 0) {
-        monthlyMap[t.month_label].income += v;
+        monthlyMap[monthLabel].income += v;
         totalIncome += v;
       } else {
-        monthlyMap[t.month_label].expense += absV;
+        monthlyMap[monthLabel].expense += absV;
         totalExpense += absV;
       }
       
-      monthlyMap[t.month_label].balance += v;
-      monthlyMap[t.month_label].count++;
-      sourcesMap[t.document_source] += absV;
-      categoriesMap[t.category] += absV;
+      monthlyMap[monthLabel].balance += v;
+      monthlyMap[monthLabel].count++;
+      sourcesMap[source] += absV;
+      categoriesMap[category] += absV;
     });
 
     const monthly = Object.entries(monthlyMap)
@@ -84,9 +106,9 @@ export function DashboardTab() {
         col: ['#818cf8', '#a78bfa', '#22d3ee', '#fbbf24', '#f97316', '#34d399', '#fb7185', '#14b8a6'][i % 8] 
       }));
 
-    const totalTxs = transactions.length;
+    const totalTxs = transactionsData.length;
     return { monthly, categories, totalIncome, totalExpense, totalTxs, sourcesMap };
-  }, []);
+  }, [transactionsData]);
 
   const { monthly, categories, totalIncome, totalExpense, totalTxs, sourcesMap } = metrics;
   
@@ -96,7 +118,16 @@ export function DashboardTab() {
     color: ['#34d399', '#fbbf24', '#22d3ee', '#a78bfa'][i % 4]
   })).sort((a,b) => b.value - a.value);
 
-  const saneamento = Math.round((totalTxs / 2000) * 100);
+  const saneamento = totalTxs > 0 ? Math.min(100, Math.round((totalTxs / 2000) * 100)) : 0;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[50vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <span className="ml-3 text-text-muted font-mono uppercase text-xs">Sincronizando com Supabase...</span>
+      </div>
+    );
+  }
 
   return (
     <div id="dashboard-content" className="space-y-5">

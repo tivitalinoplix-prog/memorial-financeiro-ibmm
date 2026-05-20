@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import { getTransactions, TransactionRow } from '@/lib/db';
 import { formatCurrency, formatCurrencyShort } from '@/lib/mock-data';
 import { StatusBadge, StatusType } from '@/components/StatusBadge';
-import { DetailDrawer } from '@/components/DetailDrawer';
 import { Search, ChevronDown, ChevronUp, ArrowUpDown, Eye, Loader2, CheckCircle2, Sparkles, Camera, ImagePlus, FolderOpen, X } from 'lucide-react';
 import { ExportToolbar } from '@/components/ExportToolbar';
 
@@ -222,8 +221,10 @@ export function SurgeryTab() {
         </div>
       </div>
 
-      {/* Summary Bar */}
-      <div id="surgery-dashboard" className="space-y-4">
+      {/* Main Layout Container */}
+      <div id="surgery-dashboard" className="flex flex-col lg:flex-row gap-4 items-start">
+        {/* Left Column: List */}
+        <div className="flex-1 w-full min-w-0 space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-card border border-border p-3 relative overflow-hidden">
             <Sparkles className="absolute -right-2 -bottom-2 w-12 h-12 text-primary/5" />
@@ -364,16 +365,21 @@ export function SurgeryTab() {
             </div>
           )}
         </div>
+      </div>
 
-        {/* Detail Drawer */}
-        <DetailDrawer 
-          isOpen={!!selectedTx} 
-          onClose={() => setSelectedTx(null)}
-          title="Contas a Pagar / Registrar"
-          subtitle={selectedTx ? `Mesa de Cirurgia (Revisão da IA)` : ''}
-        >
-          {selectedTx && (
-            <div className="space-y-4">
+        {/* Right Column: Detail Panel */}
+        {selectedTx && (
+          <div className="w-full lg:w-96 shrink-0 bg-background border border-border flex flex-col sticky top-4 animate-in slide-in-from-right-8 duration-300">
+            <div className="flex items-center justify-between p-4 border-b border-border bg-surface">
+              <div>
+                <h3 className="text-[13px] font-bold text-text-primary">Contas a Pagar / Registrar</h3>
+                <p className="text-[10px] text-text-ghost uppercase font-mono mt-0.5">Mesa de Cirurgia (Revisão da IA)</p>
+              </div>
+              <button onClick={() => setSelectedTx(null)} className="text-text-ghost hover:text-text-primary hover:bg-background p-1.5 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-4 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 120px)' }}>
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-surface border border-border p-3">
                   <div className="text-[9px] text-rose-500 uppercase tracking-[0.08em] font-bold mb-1">* Caixa</div>
@@ -441,8 +447,8 @@ export function SurgeryTab() {
                 </button>
               </div>
             </div>
-          )}
-        </DetailDrawer>
+          </div>
+        )}
       </div>
 
       {/* Uploading Overlay */}
