@@ -36,11 +36,11 @@ export type TransactionRow = {
   cost_center: string | null;
   payment_method: string | null;
   account: string | null;
-  entry_type: 'crédito' | 'débito' | null;
+  type: 'crédito' | 'débito' | null;
   operation_type: string | null;
   status: 'pendente' | 'confirmado' | 'rejeitado';
   confidence: number | null;
-  source_type: 'ocr' | 'comunion' | 'manual' | 'csv_import' | 'json_import';
+  notes: string | null;
   created_at: string;
   raw_data: Record<string, unknown> | null;
 };

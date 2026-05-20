@@ -65,7 +65,7 @@ export async function getTransactions(opts?: {
 
     if (opts?.dateFrom) query = query.gte('date', opts.dateFrom);
     if (opts?.dateTo)   query = query.lte('date', opts.dateTo);
-    if (opts?.source)   query = query.eq('source_type', opts.source);
+    if (opts?.source)   query = query.like('notes', `%source: ${opts.source}%`);
     if (opts?.status)   query = query.eq('status', opts.status);
     if (opts?.limit)    query = query.limit(opts.limit);
     if (opts?.offset)   query = (query as any).range(
@@ -169,11 +169,12 @@ export async function getStats(): Promise<{
     const [total, pendentes, porFonte] = await Promise.all([
       supabase.from('transactions').select('id', { count: 'exact', head: true }),
       supabase.from('transactions').select('id', { count: 'exact', head: true }).eq('status', 'pendente'),
-      supabase.from('transactions').select('source_type'),
+      supabase.from('transactions').select('notes'),
     ]);
     const fonteMap: Record<string, number> = {};
-    (porFonte.data ?? []).forEach((r: { source_type: string }) => {
-      fonteMap[r.source_type] = (fonteMap[r.source_type] ?? 0) + 1;
+    (porFonte.data ?? []).forEach((r: { notes: string | null }) => {
+      const src = r.notes?.includes('source: ocr') ? 'ocr' : (r.notes?.includes('source: comunion') ? 'comunion' : 'manual');
+      fonteMap[src] = (fonteMap[src] ?? 0) + 1;
     });
     return {
       total: total.count ?? 0,

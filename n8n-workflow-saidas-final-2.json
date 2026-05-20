@@ -1,0 +1,191 @@
+{
+  "name": "Passivo Saídas 2026 (Blindado e Corrigido)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "comprovantes-2026",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "c927aae6-f92c-4c72-9ecc-88472cd156a3",
+      "name": "Webhook (Entrada WPP)1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        544,
+        256
+      ],
+      "webhookId": "8c288576-667e-4596-bdfe-256fe522eff0"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  let data = $input.item.json.text || $input.item.json;\n  if (typeof data === 'string' && data.startsWith('```json')) {\n    data = data.replace(/```json/g, '').replace(/```/g, '');\n  }\n  const parsed = typeof data === 'string' ? JSON.parse(data) : data;\n\n  // 1. Converter data DD/MM/YYYY para YYYY-MM-DD (Requisito do Supabase)\n  if (parsed.date && typeof parsed.date === 'string' && parsed.date.includes('/')) {\n    const parts = parsed.date.split('/');\n    if (parts.length === 3) {\n      parsed.date = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;\n    }\n  }\n  \n  // Verificar se a data está vazia ou nula e atribuir a data de hoje\n  if (!parsed.date || (typeof parsed.date === 'string' && parsed.date.trim() === '')) {\n    parsed.date = new Date().toISOString().split('T')[0];\n  }\n\n  // 2. Garantir amount negativo para saídas/débitos (Regra do Banco)\n  let val = parsed.amount;\n  if (typeof val === 'string') {\n    val = parseFloat(val.replace(',', '.'));\n  }\n  parsed.amount = val ? -Math.abs(val) : 0;\n\n  // 3. Garantir category não-nulo (Requisito do Supabase)\n  if (!parsed.category || (typeof parsed.category === 'string' && parsed.category.trim() === '')) {\n    parsed.category = 'Outros';\n  }\n\n  // 4. Garantir description não-nulo\n  if (!parsed.description || (typeof parsed.description === 'string' && parsed.description.trim() === '')) {\n    parsed.description = 'Sem descrição';\n  }\n\n  // 5. Garantir payee não-nulo\n  if (!parsed.payee || (typeof parsed.payee === 'string' && parsed.payee.trim() === '')) {\n    parsed.payee = 'Não identificado';\n  }\n\n  // 6. Garantir account não-nulo\n  if (!parsed.account || (typeof parsed.account === 'string' && parsed.account.trim() === '')) {\n    parsed.account = 'CAIXA_TESOURARIA';\n  }\n\n  // 7. Mapear para a coluna correta 'entry_type' do Supabase\n  parsed.entry_type = 'débito';\n\n  // 8. Mapear status correto\n  parsed.status = 'pendente';\n\n  // 9. Definir o source_type\n  parsed.source_type = 'ocr';\n\n  return parsed;\n} catch(e) {\n  return {\n    date: new Date().toISOString().split('T')[0],\n    description: 'Erro de Leitura OCR',\n    amount: 0,\n    entry_type: 'débito',\n    category: 'Outros',\n    account: 'CAIXA_TESOURARIA',\n    status: 'pendente',\n    payee: 'Não identificado',\n    source_type: 'ocr'\n  };\n}"
+      },
+      "id": "b164f8f8-7ee6-4fb1-9fd8-3d906d94e7f9",
+      "name": "Parser JSON1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://svhvgvymmhoktvnmwggm.supabase.co/rest/v1/transactions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2aHZndnltbWhva3R2bm13Z2dtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODU0NzQyOCwiZXhwIjoyMDk0MTIzNDI4fQ.Nn6DedVCbIZOxQeqlM84h4Sy2frQ2Ooyk53KRN16bMU"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2aHZndnltbWhva3R2bm13Z2dtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODU0NzQyOCwiZXhwIjoyMDk0MTIzNDI4fQ.Nn6DedVCbIZOxQeqlM84h4Sy2frQ2Ooyk53KRN16bMU"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "date",
+              "value": "={{ $json.date }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.description }}"
+            },
+            {
+              "name": "amount",
+              "value": "={{ $json.amount }}"
+            },
+            {
+              "name": "entry_type",
+              "value": "={{ $json.entry_type }}"
+            },
+            {
+              "name": "category",
+              "value": "={{ $json.category }}"
+            },
+            {
+              "name": "account",
+              "value": "={{ $json.account }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $json.status }}"
+            },
+            {
+              "name": "supplier",
+              "value": "={{ $json.payee }}"
+            },
+            {
+              "name": "source_type",
+              "value": "ocr"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "28552456-9f3d-49f3-859c-399fdce43ec8",
+      "name": "Supabase via HTTP1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1216,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Analise este documento (nota fiscal, cupom ou comprovante bancário) e extraia as seguintes informações em formato JSON puro, sem markdown ou blocos de código:\n{\n  \"date\": \"data da transação no formato YYYY-MM-DD\",\n  \"description\": \"descrição ou histórico da operação\",\n  \"amount\": valor numérico da transação,\n  \"category\": \"categoria inferida (ex: Alimentação, Transporte, etc)\",\n  \"payee\": \"beneficiário ou destinatário\"\n}",
+        "inputType": "binary",
+        "binaryPropertyName": "comprovante",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        768,
+        256
+      ],
+      "id": "af5742c3-96d7-45b7-b03a-b91aef820335",
+      "name": "Analyze an image1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2kZ2jN4jMR8IrAXi",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook (Entrada WPP)1": {
+      "main": [
+        [
+          {
+            "node": "Analyze an image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser JSON1": {
+      "main": [
+        [
+          {
+            "node": "Supabase via HTTP1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image1": {
+      "main": [
+        [
+          {
+            "node": "Parser JSON1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "d67c6b29-ccfb-4b22-b06a-3dad92a2e60c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "738b1ce8541abcf030e87c23c7881382f1f52d5b270f668c1b4a4e9ec9e74891"
+  },
+  "id": "Jocu1c8BpxYlBnMV",
+  "tags": []
+}

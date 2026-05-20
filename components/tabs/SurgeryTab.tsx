@@ -172,7 +172,7 @@ export function SurgeryTab() {
     </span>
   );
 
-  const totalExpense = filtered.filter(t => (t.amount || 0) < 0 || t.entry_type === 'débito').reduce((s, t) => s + Math.abs(t.amount || 0), 0);
+  const totalExpense = filtered.filter(t => (t.amount || 0) < 0 || t.type === 'saida').reduce((s, t) => s + Math.abs(t.amount || 0), 0);
 
   const selectClass = "bg-surface border border-border text-text-secondary text-[10px] px-2 py-1.5 focus:outline-none focus:border-primary cursor-pointer appearance-none";
 
