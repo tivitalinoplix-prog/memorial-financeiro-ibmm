@@ -177,11 +177,11 @@ Retorne APENAS o JSON, sem markdown, sem backticks, sem explicação.`;
     reader.readAsDataURL(file);
   };
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (file) handleFileSelect(file);
-  }, []);
+  };
 
   const handleInputChange = (field: keyof ExtractedData, value: string | number) => {
     if (!extractedData) return;

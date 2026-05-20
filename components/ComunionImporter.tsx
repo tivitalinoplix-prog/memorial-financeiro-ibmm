@@ -208,11 +208,11 @@ export function ComunionImporter({ isOpen, onClose }: ComunionImporterProps) {
     toast.success(`${selected.length} lançamentos importados com sucesso!`);
   };
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (file) handleFileSelect(file);
-  }, []);
+  };
 
   if (!isOpen) return null;
 
