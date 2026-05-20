@@ -49,14 +49,14 @@ export async function POST(request: Request) {
       category: category || 'Outros',
       account: account || 'CAIXA_TESOURARIA',
       status: status === 'pending' ? 'pendente' : 'confirmado',
-      source_type: 'manual',
+      notes: 'source: manual',
       supplier: null,
-      cnpj: null,
-      document_source: null,
       cost_center: null,
       payment_method: null,
       operation_type: null,
       confidence: null,
+      cnpj: null,
+      document_source: null,
       raw_data: { external_id: external_id || `forms-${Date.now()}` }
     };
 

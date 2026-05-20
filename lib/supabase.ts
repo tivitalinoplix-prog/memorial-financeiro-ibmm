@@ -36,7 +36,7 @@ export type TransactionRow = {
   cost_center: string | null;
   payment_method: string | null;
   account: string | null;
-  type: 'crédito' | 'débito' | null;
+  type: 'entrada' | 'saida' | null;
   operation_type: string | null;
   status: 'pendente' | 'confirmado' | 'rejeitado';
   confidence: number | null;
